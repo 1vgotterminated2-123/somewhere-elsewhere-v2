@@ -10,45 +10,27 @@
   :root { --white:#e8e8df; --dim:#969b9c; --gold:#f5d77b; --blue:#9ecbd4; }
   * { box-sizing:border-box; }
   html,body { width:100%;height:100%;margin:0;overflow:hidden; }
-  body {
-    background:#101820;color:var(--white);font-family:'VT323',monospace;
-    display:grid;place-items:center;image-rendering:pixelated;
-    user-select:none;
-  }
-  #stars { display:none; }
-  .world { display:none; }
-  .title-screen {
-    position:relative;z-index:1;width:min(1050px,96vw);height:min(720px,94vh);
-    display:grid;grid-template-columns:1fr 300px;align-items:center;gap:30px;padding:45px 6%;
-  }
+  body { background:#101820;color:var(--white);font-family:'VT323',monospace;display:grid;place-items:center;image-rendering:pixelated;user-select:none; }
+  button,input { font-family:inherit; }
+  #stars,.horizon { display:none; }
+  .title-screen { position:relative;z-index:1;width:min(1050px,96vw);height:min(720px,94vh);display:grid;grid-template-columns:1fr 300px;align-items:center;gap:30px;padding:45px 6%; }
   .art { position:relative;height:100%;display:flex;align-items:center;justify-content:center; }
   .title-block { position:relative;top:auto;left:auto;z-index:2;margin-top:-30px; }
-  h1 { margin:0;font-family:'Silkscreen',monospace;font-size:clamp(27px,4.2vw,52px);font-weight:400;line-height:1.4;
-    letter-spacing:-.08em;color:#e6e5dc;text-shadow:4px 4px 0 #38454a; }
+  h1 { margin:0;font-family:'Silkscreen',monospace;font-size:clamp(27px,4.2vw,52px);font-weight:400;line-height:1.4;letter-spacing:-.08em;color:#e6e5dc;text-shadow:4px 4px 0 #38454a; }
   h1 span { display:block;color:#b6d1d2;margin-left:36px; }
   .subtitle { color:#88989b;font-size:18px;letter-spacing:.12em;margin:14px 0 0 5px; }
-
-  .menu {
-    align-self:center;justify-self:end;width:100%;max-width:280px;padding:20px 0;
-    background:transparent;border:0;
-  }
+  .menu { align-self:center;justify-self:end;width:100%;max-width:280px;padding:20px 0;background:transparent;border:0; }
   .menu-heading { color:#77878b;font-size:17px;letter-spacing:.18em;margin:0 0 18px 27px; }
   .menu-list { display:flex;flex-direction:column;gap:5px; }
-  .menu button {
-    all:unset;display:flex;align-items:center;min-height:42px;padding:2px 10px 2px 0;
-    color:#aeb7b5;font:26px 'VT323',monospace;letter-spacing:.03em;cursor:default;
-    pointer-events:none;
-  }
+  .menu button { all:unset;display:flex;align-items:center;min-height:42px;padding:2px 10px 2px 0;color:#aeb7b5;font:26px 'VT323',monospace;letter-spacing:.03em;cursor:default;pointer-events:none; }
   .menu button .marker { display:inline-block;width:27px;color:transparent;font-size:25px; }
   .menu button.selected { color:#fff; }
   .menu button.selected .marker { color:var(--gold); }
-  .menu button:focus { outline:none; }
   .menu-note { margin:23px 0 0 27px;color:#6f7c7d;font-size:16px;line-height:1.5; }
-  .footer { position:fixed;z-index:2;left:22px;right:22px;bottom:14px;display:flex;justify-content:space-between;
-    color:#59666a;font-size:15px;letter-spacing:.04em;pointer-events:none; }
+  .footer { position:fixed;z-index:2;left:22px;right:22px;bottom:14px;display:flex;justify-content:space-between;color:#59666a;font-size:15px;letter-spacing:.04em;pointer-events:none; }
   .dialog-backdrop { position:fixed;inset:0;z-index:5;background:rgba(0,0,0,.72);display:none;place-items:center;padding:20px; }
   .dialog-backdrop.open { display:grid; }
-  .dialog { width:min(440px,100%);padding:24px 28px;background:#11191d;border:2px solid #59696a;box-shadow:7px 7px 0 #050708; }
+  .dialog { width:min(520px,100%);padding:24px 28px;background:#11191d;border:2px solid #59696a;box-shadow:7px 7px 0 #050708; }
   .dialog h2 { font:30px 'VT323',monospace;color:var(--gold);margin:0 0 10px; }
   .dialog p { font:20px 'VT323',monospace;line-height:1.35;color:#c5ccca;margin:8px 0; }
   .dialog .actions { display:flex;justify-content:flex-end;gap:12px;margin-top:22px; }
@@ -56,73 +38,119 @@
   .dialog button.selected { color:var(--gold); }
   .dialog button .marker { display:inline-block;width:17px;color:transparent; }
   .dialog button.selected .marker { color:var(--gold); }
+  .name-input { width:100%;margin-top:12px;padding:9px 11px;background:#080e12;border:2px solid #718184;color:#fff;font:24px 'VT323',monospace;outline:none;user-select:text; }
+  .name-input:focus { border-color:var(--gold); }
+  .name-help { color:#7e8b8d!important;font-size:17px!important; }
   .volume-row { display:flex;align-items:center;gap:12px;font:20px 'VT323',monospace;color:#c5ccca; }
   input[type=range] { accent-color:var(--gold);width:140px; }
+  /* Test room */
+  #gameScreen { display:none;position:fixed;inset:0;background:#101820;z-index:3; }
+  #gameScreen.active { display:flex;flex-direction:column; }
+  .game-top { height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;color:#718184;font-size:17px;letter-spacing:.08em;border-bottom:1px solid #29383d; }
+  .room-wrap { flex:1;display:grid;place-items:center;min-height:0;padding:16px; }
+  .room { position:relative;width:min(760px,92vw, calc((100vh - 145px) * 1.45));aspect-ratio:1.45;background:#263b3c;border:12px solid #18272b;box-shadow:0 0 0 3px #526568,8px 8px 0 #080d10;overflow:hidden; }
+  .room-grid { position:absolute;inset:0;display:grid;grid-template-columns:repeat(15,1fr);grid-template-rows:repeat(10,1fr); }
+  .tile { background:#536765;border:1px solid rgba(20,35,36,.16); }
+  .tile.alt { background:#4e6260; }
+  .wall { background:#293c40!important;border-color:#1b2a2e!important; }
+  .rug { background:#756b55!important; }
+  .object { position:absolute;display:grid;place-items:center;font-size:clamp(17px,3vw,31px);filter:drop-shadow(2px 3px 0 #263234); }
+  .desk { left:43%;top:22%;width:17%;height:13%;background:#775d43;border:4px solid #493c32; }
+  .lamp { left:48%;top:15%;width:8%;height:10%; }
+  .terminal { left:76%;top:42%;width:9%;height:15%;background:#31484b;border:4px solid #19282d; }
+  .plant { left:12%;top:45%;width:8%;height:14%; }
+  .sign { left:42%;top:72%;width:16%;height:8%;background:#665744;border:3px solid #3d352b;font-size:15px;color:#f0dfb6; }
+  .npc { left:23%;top:30%;width:7%;height:13%;font-size:clamp(20px,3vw,34px); }
+  #player { position:absolute;left:50%;top:57%;width:4.6%;height:9%;z-index:2;transition:left .075s linear,top .075s linear; }
+  .player-body { position:absolute;left:15%;top:23%;width:70%;height:72%;background:#d8b66f;border:3px solid #66513d;box-shadow:0 -7px 0 -2px #d9e4df,3px 4px 0 #293334; }
+  .player-head { position:absolute;left:22%;top:0;width:56%;height:31%;background:#d9e6df;border:2px solid #748b88; }
+  .player-face { position:absolute;left:30%;top:12%;width:40%;height:8%;background:#25363a; }
+  .game-bottom { min-height:64px;display:flex;align-items:center;justify-content:center;gap:28px;color:#849394;font-size:18px;letter-spacing:.04em; }
+  .game-bottom strong { color:var(--gold);font-weight:400; }
+  .dialogue-box { position:fixed;z-index:8;left:50%;bottom:7%;transform:translateX(-50%);width:min(850px,92vw);min-height:145px;padding:20px 25px 16px;background:#10191e;border:3px solid #d5d9cf;box-shadow:7px 7px 0 rgba(0,0,0,.55);display:none; }
+  .dialogue-box.open { display:block; }
+  .speaker { color:var(--gold);font-size:20px;margin-bottom:7px; }
+  .dialogue-text { color:#f0f0e8;font-size:25px;line-height:1.25;min-height:55px;white-space:pre-wrap; }
+  .dialogue-hint { position:absolute;right:18px;bottom:8px;color:#89999a;font-size:16px; }
+  .pause-note { position:fixed;z-index:7;top:58px;right:18px;color:#59696a;font-size:15px;pointer-events:none; }
   @media(max-width:720px) {
     .title-screen { height:100vh;grid-template-columns:1fr;grid-template-rows:1fr auto;gap:0;padding:25px 8% 58px; }
-    .art { min-height:0; }
-    .title-block { top:7%;left:2%; }
-    h1 { font-size:clamp(28px,8vw,45px); }
-    .pixel-scene { bottom:2%;height:48%; }
-    .moon { width:75px;height:75px;right:14%; }
-    .menu { justify-self:center;max-width:300px;padding:0; }
-    .menu-heading { margin-bottom:8px; }
-    .menu button { min-height:35px;font-size:24px; }
-    .menu-note { margin-top:10px; }
-    .footer { font-size:12px;bottom:8px;left:10px;right:10px; }
+    .art { min-height:0; }.title-block { top:7%;left:2%; }
+    h1 { font-size:clamp(28px,8vw,45px); }.menu { justify-self:center;max-width:300px;padding:0; }
+    .menu-heading { margin-bottom:8px; }.menu button { min-height:35px;font-size:24px; }
+    .menu-note { margin-top:10px; }.footer { font-size:12px;bottom:8px;left:10px;right:10px; }
+    .room { width:94vw;border-width:7px; }.game-bottom { gap:12px;font-size:15px; }
+    .dialogue-box { bottom:5%;padding:15px 17px; }.dialogue-text {font-size:22px;}
   }
 </style>
 </head>
 <body>
 <canvas id="stars" aria-hidden="true"></canvas>
-<div class="horizon" aria-hidden="true"></div>
-
-<main class="title-screen">
+<main class="title-screen" id="titleScreen">
   <section class="art" aria-label="Somewhere, Elsewhere title artwork">
-    <div class="title-block">
-      <h1>Somewhere,<span>Elsewhere</span></h1>
-      <p class="subtitle">A story waiting in the dark.</p>
-    </div>
-
+    <div class="title-block"><h1>Somewhere,<span>Elsewhere</span></h1><p class="subtitle">A story waiting in the dark.</p></div>
   </section>
   <nav class="menu" aria-label="Main menu">
     <p class="menu-heading">MAIN MENU</p>
     <div class="menu-list">
-      <button class="selected" data-dialog="new"><span class="marker">▶</span>New Game</button>
-      <button data-dialog="continue"><span class="marker">▶</span>Continue</button>
-      <button data-dialog="settings"><span class="marker">▶</span>Options</button>
-      <button data-dialog="about"><span class="marker">▶</span>About</button>
-      <button data-dialog="quit"><span class="marker">▶</span>Quit</button>
+      <button class="selected" data-action="new"><span class="marker">▶</span>New Game</button>
+      <button data-action="continue"><span class="marker">▶</span>Continue</button>
+      <button data-action="settings"><span class="marker">▶</span>Options</button>
+      <button data-action="about"><span class="marker">▶</span>About</button>
+      <button data-action="quit"><span class="marker">▶</span>Quit</button>
     </div>
-    <p class="menu-note">Z / ENTER — Confirm<br>X / ESC — Back</p>
+    <p class="menu-note">↑ ↓ — Select<br>Z / ENTER — Confirm<br>X / ESC — Back</p>
   </nav>
 </main>
-<div class="footer"><span>SOMEWHERE, ELSEWHERE</span><span>v0.0.1</span></div>
+<div class="footer" id="footer"><span>SOMEWHERE, ELSEWHERE</span><span>v0.1.0</span></div>
 
-<div class="version">SOMEWHERE, ELSEWHERE&nbsp; · &nbsp;PRE-ALPHA</div>
-<div class="hint">↑ ↓ TO SELECT &nbsp;·&nbsp; ENTER TO OPEN</div>
+<section id="gameScreen" aria-label="Testing room">
+  <header class="game-top"><span>SOMEWHERE, ELSEWHERE</span><span id="playerLabel">PLAYER</span></header>
+  <div class="room-wrap">
+    <div class="room" id="room">
+      <div class="room-grid" id="roomGrid"></div>
+      <div class="object desk" title="Desk"></div><div class="object lamp">♟</div>
+      <div class="object terminal">▣</div><div class="object plant">♣</div>
+      <div class="object sign">NOTICE</div><div class="object npc">◉</div>
+      <div id="player"><div class="player-head"></div><div class="player-face"></div><div class="player-body"></div></div>
+    </div>
+  </div>
+  <div class="game-bottom"><span><strong>ARROWS</strong> Move</span><span><strong>Z / ENTER</strong> Interact</span><span><strong>X / ESC</strong> Menu</span></div>
+  <div class="pause-note">TEST ROOM · PRE-ALPHA</div>
+</section>
 
 <div class="dialog-backdrop" id="dialogBackdrop" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
   <div class="dialog">
-    <h2 id="dialogTitle">A quiet moment</h2>
-    <div id="dialogBody"></div>
+    <h2 id="dialogTitle">A quiet moment</h2><div id="dialogBody"></div>
     <div class="actions"><button id="closeDialog"><span class="marker">▶</span>BACK</button><button id="dialogConfirm"><span class="marker">▶</span>OK</button></div>
   </div>
+</div>
+<div class="dialogue-box" id="dialogueBox" aria-live="polite">
+  <div class="speaker" id="speaker"></div><div class="dialogue-text" id="dialogueText"></div><div class="dialogue-hint">Z / ENTER — NEXT</div>
 </div>
 
 <script>
 (() => {
+  const $ = id => document.getElementById(id);
   const buttons=[...document.querySelectorAll('.menu button')];
-  const backdrop=document.getElementById('dialogBackdrop');
-  const title=document.getElementById('dialogTitle');
-  const body=document.getElementById('dialogBody');
-  const backButton=document.getElementById('closeDialog');
-  const okButton=document.getElementById('dialogConfirm');
-  let selected=0, dialogOpen=false, dialogSelected=1;
+  const backdrop=$('dialogBackdrop'), title=$('dialogTitle'), body=$('dialogBody');
+  const backButton=$('closeDialog'), okButton=$('dialogConfirm');
+  const titleScreen=$('titleScreen'), gameScreen=$('gameScreen'), footer=$('footer');
+  const dialogueBox=$('dialogueBox'), speakerEl=$('speaker'), dialogueText=$('dialogueText');
+  let selected=0, dialogOpen=false, dialogSelected=1, mode='menu', returnTo='menu';
+  let playerName='Traveler', player={x:7,y:6,face:'down'}, activeDialogue=null, dialogueIndex=0;
+  const SAVE_KEY='somewhere_elsewhere_save_v1';
 
+  // Build a small fixed test room from walkable floor tiles and solid perimeter walls.
+  const grid=$('roomGrid');
+  for(let y=0;y<10;y++) for(let x=0;x<15;x++) {
+    const tile=document.createElement('div');
+    tile.className='tile'+((x+y)%2?' alt':'')+((x===0||y===0||x===14||y===9)?' wall':'');
+    grid.appendChild(tile);
+  }
   function selectMenu(index) {
     selected=(index+buttons.length)%buttons.length;
-    buttons.forEach((button,i)=>button.classList.toggle('selected',i===selected));
+    buttons.forEach((b,i)=>b.classList.toggle('selected',i===selected));
   }
   function selectDialog(index) {
     dialogSelected=(index+2)%2;
@@ -130,57 +158,176 @@
     okButton.classList.toggle('selected',dialogSelected===1);
   }
   function closeDialog() {
-    backdrop.classList.remove('open');
-    dialogOpen=false;
-    selectMenu(selected);
+    backdrop.classList.remove('open'); dialogOpen=false; mode=returnTo;
+    if(mode==='name') $('playerNameInput')?.focus();
   }
-  function openDialog(kind) {
+  function showDialog(kind) {
+    returnTo='menu'; mode='dialog'; dialogOpen=true;
     const messages={
-      new:['Not yet', '<p>This is a menu preview. The journey will begin in a future update.</p>'],
-      continue:['No save data', '<p>There is no saved game to continue.</p>'],
-      about:['Somewhere, Elsewhere', '<p>A quiet, story-driven adventure about a small traveler, a strange world, and the light they carry.</p><p>Inspired by the feeling of discovering a world that seems to notice you.</p>'],
-      quit:['Not so fast', '<p>There is nowhere to go just yet. Thanks for playing this little preview.</p>']
+      continue:['No save data','<p>There is no saved game to continue.</p>'],
+      about:['Somewhere, Elsewhere','<p>A quiet, story-driven adventure about a small traveler, a strange world, and the light they carry.</p><p>This is an original test build inspired by classic atmospheric adventure games.</p>'],
+      quit:['Not so fast','<p>There is nowhere to go just yet. Thanks for visiting.</p>']
     };
     if(kind==='settings') {
       title.textContent='Options';
-      body.innerHTML='<div class="volume-row"><label for="volume">Volume</label><input id="volume" type="range" min="0" max="100" value="70"><span id="volumeValue">70</span></div><p>Audio options will be available in a future update.</p>';
-      const slider=document.getElementById('volume');
-      slider.addEventListener('input',()=>document.getElementById('volumeValue').textContent=slider.value);
+      body.innerHTML='<div class="volume-row"><label for="volume">Volume</label><input id="volume" type="range" min="0" max="100" value="70"><span id="volumeValue">70</span></div><p>Audio options will be available later.</p>';
+      $('volume').addEventListener('input',()=> $('volumeValue').textContent=$('volume').value);
     } else {
-      title.textContent=messages[kind][0];
-      body.innerHTML=messages[kind][1];
+      title.textContent=messages[kind][0]; body.innerHTML=messages[kind][1];
     }
-    backdrop.classList.add('open');
-    dialogOpen=true;
-    selectDialog(1);
+    backdrop.classList.add('open'); selectDialog(1);
   }
-  function activateMenu() { openDialog(buttons[selected].dataset.dialog); }
+  function openNameEntry() {
+    returnTo='menu'; mode='name'; dialogOpen=true;
+    title.textContent='A new journey';
+    body.innerHTML='<p>Before we begin, what is your name?</p><input class="name-input" id="playerNameInput" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Enter your name"><p class="name-help">You can use up to 16 characters.</p>';
+    backdrop.classList.add('open'); selectDialog(1);
+    const input=$('playerNameInput'); input.value=''; setTimeout(()=>input.focus(),0);
+  }
+  function startGame(name, isNew=true) {
+    playerName=name || 'Traveler';
+    if(isNew) player={x:7,y:6,face:'down'};
+    saveGame();
+    $('playerLabel').textContent=playerName.toUpperCase();
+    titleScreen.style.display='none'; footer.style.display='none';
+    backdrop.classList.remove('open'); dialogOpen=false; mode='game';
+    gameScreen.classList.add('active'); updatePlayer();
+    if(isNew) startDialogue('','A small room. A quiet beginning.','The air feels still here.','There must be something to look at.');
+  }
+  function saveGame() {
+    try { localStorage.setItem(SAVE_KEY,JSON.stringify({name:playerName,player})); } catch(e) {}
+  }
+  function loadGame() {
+    try {
+      const data=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');
+      if(!data || !data.name) return null;
+      return data;
+    } catch(e) { return null; }
+  }
+  function activateMenu() {
+    const action=buttons[selected].dataset.action;
+    if(action==='new') openNameEntry();
+    else if(action==='continue') {
+      const data=loadGame();
+      if(data) { player=data.player||player; startGame(data.name,false); }
+      else showDialog('continue');
+    } else showDialog(action);
+  }
   function activateDialog() {
-    // Both choices currently dismiss this informational preview dialog.
-    closeDialog();
+    if(mode==='name') {
+      const input=$('playerNameInput');
+      const name=(input?.value||'').trim();
+      if(!name) { input?.focus(); body.querySelector('.name-help').textContent='Please enter a name to continue.'; return; }
+      startGame(name,true);
+    } else closeDialog();
   }
-
-  // Intentionally keyboard-only: pointer events never activate or select menu options.
-  document.addEventListener('mousedown',e=>e.preventDefault());
-  document.addEventListener('click',e=>e.preventDefault());
+  function updatePlayer() {
+    const el=$('player');
+    el.style.left=(player.x/15*100+2)+'%';
+    el.style.top=(player.y/10*100+1)+'%';
+    el.style.transform=player.face==='left'?'scaleX(-1)':player.face==='right'?'scaleX(1)':'';
+  }
+  function blocked(x,y) {
+    if(x<1||x>13||y<1||y>8) return true;
+    // Furniture and fixtures occupy solid tiles.
+    const solids=[[6,2],[7,2],[8,2],[6,3],[7,3],[8,3],[11,4],[11,5],[3,4],[3,5]];
+    return solids.some(([sx,sy])=>sx===x&&sy===y);
+  }
+  function move(dx,dy) {
+    player.face=dx<0?'left':dx>0?'right':dy<0?'up':'down';
+    const nx=player.x+dx, ny=player.y+dy;
+    if(!blocked(nx,ny)) { player.x=nx; player.y=ny; saveGame(); }
+    updatePlayer();
+  }
+  function startDialogue(speaker,...lines) {
+    activeDialogue={speaker,lines}; dialogueIndex=0; mode='talk';
+    speakerEl.textContent=speaker; dialogueText.textContent=lines[0]||'';
+    dialogueBox.classList.add('open');
+  }
+  function advanceDialogue() {
+    if(!activeDialogue) return;
+    dialogueIndex++;
+    if(dialogueIndex>=activeDialogue.lines.length) {
+      dialogueBox.classList.remove('open'); activeDialogue=null; mode='game'; return;
+    }
+    dialogueText.textContent=activeDialogue.lines[dialogueIndex];
+  }
+  function interact() {
+    // Check the tile immediately in front of the player.
+    const dx=player.face==='left'?-1:player.face==='right'?1:0;
+    const dy=player.face==='up'?-1:player.face==='down'?1:0;
+    const tx=player.x+dx, ty=player.y+dy;
+    if((tx>=5&&tx<=9&&ty>=1&&ty<=3) || (player.x>=5&&player.x<=9&&player.y===4)) {
+      startDialogue('','An old desk.','There is nothing on it but a thin layer of dust.');
+    } else if(tx===11&&(ty===4||ty===5) || (player.x===11&&player.y===6)) {
+      startDialogue('TERMINAL','TEST TERMINAL v0.1','The screen flickers softly.','No connection. No messages. Just a blinking cursor.');
+    } else if(tx===3&&(ty===4||ty===5) || (player.x===3&&player.y===6)) {
+      startDialogue('','A potted plant.','It looks surprisingly healthy.');
+    } else if(tx>=6&&tx<=8&&ty===7 || (player.x>=6&&player.x<=8&&player.y===6)) {
+      startDialogue('NOTICE','TEST ROOM','Arrow keys move.','Z or ENTER interacts with things in front of you.','X or ESC opens the pause menu.');
+    } else if(tx>=3&&tx<=4&&ty>=3&&ty<=5 || (player.x>=3&&player.x<=4&&player.y===6)) {
+      startDialogue('???','Oh! Hello there.','I am just a test character.','I do not have much to say yet.','But it is nice to meet you, '+playerName+'.');
+    } else {
+      startDialogue('','Nothing interesting here.');
+    }
+  }
+  function pauseGame() {
+    returnTo='game'; mode='dialog'; dialogOpen=true;
+    title.textContent='A moment to rest';
+    body.innerHTML='<p>What would you like to do?</p><p class="name-help">Your progress is saved automatically.</p>';
+    backdrop.classList.add('open');
+    backButton.innerHTML='<span class="marker">▶</span>RESUME';
+    okButton.innerHTML='<span class="marker">▶</span>MAIN MENU';
+    selectDialog(0);
+  }
+  function activatePauseChoice() {
+    if(dialogSelected===0) { backButton.innerHTML='<span class="marker">▶</span>BACK'; okButton.innerHTML='<span class="marker">▶</span>OK'; closeDialog(); }
+    else {
+      saveGame(); backdrop.classList.remove('open'); dialogOpen=false; gameScreen.classList.remove('active');
+      titleScreen.style.display='grid'; footer.style.display='flex'; mode='menu';
+      backButton.innerHTML='<span class="marker">▶</span>BACK'; okButton.innerHTML='<span class="marker">▶</span>OK';
+      selectMenu(0);
+    }
+  }
+  document.addEventListener('mousedown',e=>{ if(!e.target.matches('input')) e.preventDefault(); });
+  document.addEventListener('click',e=>{ if(!e.target.matches('input')) e.preventDefault(); });
   document.addEventListener('keydown',e=>{
-    const key=e.key;
+    const key=e.key, inputActive=document.activeElement?.id==='playerNameInput';
+    if(inputActive) {
+      if(key==='Enter') { e.preventDefault(); activateDialog(); }
+      else if(key==='Escape') { e.preventDefault(); closeDialog(); }
+      return; // Allow normal text entry, including backspace and spaces.
+    }
     if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter',' ','Escape','Backspace','z','Z','x','X'].includes(key)) e.preventDefault();
 
     if(dialogOpen) {
-      if(key==='ArrowUp'||key==='ArrowDown'||key==='ArrowLeft'||key==='ArrowRight') {
-        selectDialog(dialogSelected===0?1:0);
-      } else if(key==='Enter'||key===' '||key==='z'||key==='Z') {
-        activateDialog();
+      if(key.startsWith('Arrow')) selectDialog(dialogSelected===0?1:0);
+      else if(key==='Enter'||key===' '||key==='z'||key==='Z') {
+        if(returnTo==='game') activatePauseChoice(); else activateDialog();
       } else if(key==='Escape'||key==='Backspace'||key==='x'||key==='X') {
-        closeDialog();
+        if(returnTo==='game') { selectDialog(0); activatePauseChoice(); } else closeDialog();
       }
       return;
     }
-
-    if(key==='ArrowDown'||key==='ArrowRight') selectMenu(selected+1);
-    else if(key==='ArrowUp'||key==='ArrowLeft') selectMenu(selected-1);
-    else if(key==='Enter'||key===' '||key==='z'||key==='Z') activateMenu();
+    if(mode==='talk') {
+      if(key==='Enter'||key===' '||key==='z'||key==='Z'||key==='ArrowDown') advanceDialogue();
+      else if(key==='Escape'||key==='x'||key==='X') { dialogueBox.classList.remove('open');activeDialogue=null;mode='game'; }
+      return;
+    }
+    if(mode==='game') {
+      if(key==='ArrowUp') move(0,-1);
+      else if(key==='ArrowDown') move(0,1);
+      else if(key==='ArrowLeft') move(-1,0);
+      else if(key==='ArrowRight') move(1,0);
+      else if(key==='Enter'||key===' '||key==='z'||key==='Z') interact();
+      else if(key==='Escape'||key==='x'||key==='X') pauseGame();
+      return;
+    }
+    if(mode==='menu') {
+      if(key==='ArrowDown'||key==='ArrowRight') selectMenu(selected+1);
+      else if(key==='ArrowUp'||key==='ArrowLeft') selectMenu(selected-1);
+      else if(key==='Enter'||key===' '||key==='z'||key==='Z') activateMenu();
+    }
   });
   selectMenu(0);
 })();
