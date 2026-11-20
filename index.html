@@ -121,7 +121,7 @@
 </div>
 
 <section id="gameScreen" aria-label="Testing room">
-  <header class="game-top"><span>SOMEWHERE, ELSEWHERE</span><span id="playerLabel">PLAYER</span></header>
+  <header class="game-top"><span id="roomTitleLabel">SOMEWHERE, ELSEWHERE</span><span id="playerLabel">PLAYER</span></header>
   <div class="room-wrap">
     <div class="room" id="room">
       <div class="room-grid" id="roomGrid"></div>
@@ -194,19 +194,20 @@
       data.maps.every(m=>m && typeof m.id==='string' && Number.isSafeInteger(m.width) &&
         Number.isSafeInteger(m.height) && m.width>0 && m.height>0 &&
         m.width*m.height<=4294967295 && Array.isArray(m.cells) && m.cells.length===m.width*m.height &&
-        m.cells.every(id=>Object.prototype.hasOwnProperty.call(TILE_TYPES,id)));
+        m.cells.every(id=>Object.prototype.hasOwnProperty.call(TILE_TYPES,id)||!!data.customTiles?.[id]));
   }
   function getProjectMap(id) { return activeProject?.maps.find(m=>m.id===id); }
   function renderMap(data) {
     currentMap=data;
     grid.innerHTML='';
+    const props=data.properties||{};$('room').style.background=props.background||'#263b3c';$('room').style.filter=props.dark?'brightness(.65)':'none';$('roomTitleLabel').textContent=props.title||data.name||'SOMEWHERE, ELSEWHERE';$('roomTitleLabel').title=props.description||'';
     grid.style.gridTemplateColumns=`repeat(${data.width},1fr)`;
     grid.style.gridTemplateRows=`repeat(${data.height},1fr)`;
     $('room').style.aspectRatio=`${data.width}/${data.height}`;
     data.cells.forEach((id,index)=>{
-      const type=TILE_TYPES[id]||TILE_TYPES.floor,cell=document.createElement('div');
+      const customType=activeProject?.customTiles?.[id],type=TILE_TYPES[id]||customType||TILE_TYPES.floor,cell=document.createElement('div');
       cell.className='map-cell '+id;
-      cell.style.background=type.color;
+      cell.style.background=type.color||'#536765';if(type.pixels){const rects=type.pixels.map((c,i)=>c?`<rect x="${i%16}" y="${Math.floor(i/16)}" width="1" height="1" fill="${c}"/>`:'').join('');cell.style.backgroundImage=`url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">${rects}</svg>`)}")`;cell.style.backgroundSize='100% 100%';}
       cell.textContent=type.glyph||'';
       cell.dataset.tile=id;
       cell.title=type.label;
@@ -223,7 +224,7 @@
   }
   function applyImportedMap(data) {
     if(validProject(data)) {
-      activeProject=data;
+      data.customTiles||={};activeProject=data;
       const first=getProjectMap(data.startMapId)||data.maps[0];
       activeProject.startMapId=first.id;
       try { localStorage.setItem('somewhere_elsewhere_project_v2',JSON.stringify(data)); } catch(e) {}
