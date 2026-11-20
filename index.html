@@ -167,8 +167,11 @@
     plant:{label:'Plant',color:'#38583e',solid:true,glyph:'♣',speaker:'',dialogue:['A potted plant.','It looks surprisingly healthy.']},
     sign:{label:'Notice',color:'#665744',solid:true,glyph:'NOTICE',speaker:'NOTICE',dialogue:['TEST ROOM','Arrow keys move.','Z or ENTER interacts with things in front of you.','X or ESC opens the pause menu.']},
     npc:{label:'Test character',color:'#596b6a',solid:true,glyph:'◉',speaker:'???',dialogue:['Oh! Hello there.','I am just a test character.','I do not have much to say yet.']},
+    door:{label:'Door',color:'#96764d',solid:true,glyph:'▥'},
+    event:{label:'Event',color:'#775d86',solid:false,glyph:'✦'},
     spawn:{label:'Player start',color:'#536765',solid:false,glyph:'',spawn:true}
   };
+  let activeProject=null, storyFlags={};
   const DEFAULT_MAP = (() => {
     const width=15,height=10,cells=Array(width*height).fill('floor');
     for(let y=0;y<height;y++) for(let x=0;x<width;x++) if(x===0||y===0||x===width-1||y===height-1) cells[y*width+x]='wall';
@@ -180,11 +183,20 @@
   let currentMap=DEFAULT_MAP;
   const grid=$('roomGrid');
   function validMap(data) {
-    return data && data.version===1 && Number.isInteger(data.width) && Number.isInteger(data.height) &&
-      data.width>=5 && data.width<=40 && data.height>=5 && data.height<=30 &&
+    return data && data.version===1 && Number.isSafeInteger(data.width) && Number.isSafeInteger(data.height) &&
+      data.width>0 && data.height>0 && data.width*data.height<=4294967295 &&
       Array.isArray(data.cells) && data.cells.length===data.width*data.height &&
       data.cells.every(id=>Object.prototype.hasOwnProperty.call(TILE_TYPES,id));
   }
+  function validProject(data) {
+    return data && data.format==='somewhere-elsewhere-project' && data.version===2 &&
+      Array.isArray(data.maps) && data.maps.length>0 &&
+      data.maps.every(m=>m && typeof m.id==='string' && Number.isSafeInteger(m.width) &&
+        Number.isSafeInteger(m.height) && m.width>0 && m.height>0 &&
+        m.width*m.height<=4294967295 && Array.isArray(m.cells) && m.cells.length===m.width*m.height &&
+        m.cells.every(id=>Object.prototype.hasOwnProperty.call(TILE_TYPES,id)));
+  }
+  function getProjectMap(id) { return activeProject?.maps.find(m=>m.id===id); }
   function renderMap(data) {
     currentMap=data;
     grid.innerHTML='';
@@ -202,16 +214,40 @@
       grid.appendChild(cell);
     });
   }
+  function activateMap(mapData) {
+    currentMap=mapData;
+    renderMap(mapData);
+    const spawn=mapData.spawn||{x:1,y:1};
+    player={x:Math.max(0,Math.min(mapData.width-1,spawn.x)),y:Math.max(0,Math.min(mapData.height-1,spawn.y)),face:'down'};
+    updatePlayer();
+  }
   function applyImportedMap(data) {
-    if(!validMap(data)) { showDialog('continue'); title.textContent='Invalid map'; body.innerHTML='<p>This file is not a compatible Somewhere, Elsewhere map.</p>'; return false; }
-    const spawn=data.spawn && Number.isInteger(data.spawn.x) && Number.isInteger(data.spawn.y) ? data.spawn : {x:1,y:1};
-    currentMap=data; renderMap(data);
-    try { localStorage.setItem('somewhere_elsewhere_map_v1',JSON.stringify(data)); } catch(e) {}
-    player={x:spawn.x,y:spawn.y,face:'down'};
-    return true;
+    if(validProject(data)) {
+      activeProject=data;
+      const first=getProjectMap(data.startMapId)||data.maps[0];
+      activeProject.startMapId=first.id;
+      try { localStorage.setItem('somewhere_elsewhere_project_v2',JSON.stringify(data)); } catch(e) {}
+      activateMap(first);
+      return true;
+    }
+    if(validMap(data)) {
+      activeProject=null;
+      try { localStorage.setItem('somewhere_elsewhere_map_v1',JSON.stringify(data)); } catch(e) {}
+      activateMap(data);
+      return true;
+    }
+    title.textContent='Invalid project';
+    body.innerHTML='<p>This is not a compatible Somewhere, Elsewhere project or map file.</p>';
+    return false;
   }
   function loadStoredMap() {
     try {
+      const project=JSON.parse(localStorage.getItem('somewhere_elsewhere_project_v2')||'null');
+      if(validProject(project)) {
+        activeProject=project;
+        const first=getProjectMap(project.startMapId)||project.maps[0];
+        activateMap(first);return;
+      }
       const stored=JSON.parse(localStorage.getItem('somewhere_elsewhere_map_v1')||'null');
       if(validMap(stored)) { currentMap=stored; renderMap(stored); return; }
     } catch(e) {}
@@ -224,7 +260,7 @@
     try {
       const data=JSON.parse(await file.text());
       if(applyImportedMap(data)) {
-        title.textContent='Map imported'; body.innerHTML='<p>Your map is now the active game map. Start a new game or continue to explore it.</p>';
+        title.textContent='Map imported'; body.innerHTML='<p>Your project and all its maps are now active. Start a new game to begin in its starting room.</p>';
         returnTo='menu';mode='dialog';dialogOpen=true;backdrop.classList.add('open');selectDialog(1);
       }
     } catch(err) {
@@ -283,7 +319,7 @@
     if(isNew) startDialogue('','A small room. A quiet beginning.','The air feels still here.','There must be something to look at.');
   }
   function saveGame() {
-    try { localStorage.setItem(SAVE_KEY,JSON.stringify({name:playerName,player})); } catch(e) {}
+    try { localStorage.setItem(SAVE_KEY,JSON.stringify({name:playerName,player,mapId:currentMap.id||null,storyFlags})); } catch(e) {}
   }
   function loadGame() {
     try {
@@ -297,7 +333,7 @@
     if(action==='new') openNameEntry();
     else if(action==='continue') {
       const data=loadGame();
-      if(data) { player=data.player||player; startGame(data.name,false); }
+      if(data) { player=data.player||player; storyFlags=data.storyFlags||{}; if(activeProject&&data.mapId){const m=getProjectMap(data.mapId);if(m)currentMap=m;} startGame(data.name,false); }
       else showDialog('continue');
     } else showDialog(action);
   }
@@ -347,7 +383,30 @@
     const candidates=[[player.x+dx,player.y+dy],[player.x,player.y]];
     for(const [tx,ty] of candidates) {
       if(tx<0||ty<0||tx>=currentMap.width||ty>=currentMap.height) continue;
-      const id=currentMap.cells[ty*currentMap.width+tx],type=TILE_TYPES[id];
+      const index=ty*currentMap.width+tx,id=currentMap.cells[index],type=TILE_TYPES[id];
+      const custom=currentMap.objects?.[index];
+      if(id==='door') {
+        const destination=custom?.door;
+        const target=destination&&getProjectMap(destination.mapId);
+        if(target) {
+          currentMap=target;
+          player={x:Math.max(0,Math.min(target.width-1,destination.x||0)),y:Math.max(0,Math.min(target.height-1,destination.y||0)),face:'down'};
+          renderMap(target);updatePlayer();saveGame();
+          startDialogue('','You step through the doorway.');
+        } else startDialogue('','The door will not open.','It does not seem to lead anywhere.');
+        return;
+      }
+      if(custom && (custom.lines?.length || custom.speaker || custom.condition)) {
+        const condition=custom.condition;
+        if(condition?.key && String(storyFlags[condition.key]??'')!==String(condition.equals??'')) {
+          startDialogue('','Nothing happens.');
+          return;
+        }
+        if(custom.setFlag?.key) storyFlags[custom.setFlag.key]=custom.setFlag.value??'true';
+        const lines=(custom.lines||[]).slice();
+        if(id==='npc') lines.push('It is nice to meet you, '+playerName+'.');
+        if(lines.length) { startDialogue(custom.speaker||'',...lines);saveGame();return; }
+      }
       if(type && type.dialogue) {
         const lines=type.dialogue.slice();
         if(id==='npc') lines.push('It is nice to meet you, '+playerName+'.');
