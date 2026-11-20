@@ -1,1 +1,2 @@
-# somewhere-elsewhere-v2
+# Somewhere, Elsewhere (DEMO)
+A small puzzle game inspired by OneShot.

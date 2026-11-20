@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080d19">
+<title>Somewhere, Elsewhere</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
+  :root {
+    --ink:#dce9f5; --muted:#8ca3b8; --cyan:#8ce8ed; --gold:#f4d58b;
+    --panel:rgba(9,17,31,.83); --line:rgba(154,205,220,.26);
+  }
+  * { box-sizing:border-box }
+  html,body { width:100%; height:100%; margin:0; overflow:hidden; }
+  body {
+    color:var(--ink); background:#080d19; font-family:"Space Mono",monospace;
+    display:grid; place-items:center;
+    background-image:
+      radial-gradient(ellipse at 50% 42%, rgba(29,66,91,.36), transparent 48%),
+      linear-gradient(180deg,#080d19 0%,#0a1424 55%,#101c2b 100%);
+  }
+  #stars { position:fixed; inset:0; width:100%; height:100%; pointer-events:none; }
+  .horizon {
+    position:fixed; left:-10%; right:-10%; bottom:-28vh; height:55vh;
+    border-radius:50%; border-top:1px solid rgba(123,211,222,.22);
+    background:radial-gradient(ellipse at 50% 0%,rgba(34,78,96,.24),transparent 68%);
+    box-shadow:0 -22px 90px rgba(72,157,175,.06); pointer-events:none;
+  }
+  .screen {
+    position:relative; width:min(1000px,94vw); min-height:min(700px,92vh);
+    display:grid; grid-template-columns:1fr 330px; align-items:center; gap:3rem;
+    padding:clamp(24px,5vw,64px); isolation:isolate;
+  }
+  .scene { position:relative; min-height:480px; display:flex; flex-direction:column; justify-content:center; }
+  .eyebrow { color:var(--cyan); font-size:11px; letter-spacing:.32em; text-transform:uppercase; opacity:.8; }
+  h1 {
+    font-family:"VT323",monospace; font-size:clamp(64px,10vw,112px); line-height:.78;
+    font-weight:400; letter-spacing:.015em; margin:22px 0 20px;
+    color:#f1f6f7; text-shadow:0 0 24px rgba(131,224,232,.25), 3px 3px 0 #28485a;
+  }
+  h1 span { display:block; color:var(--cyan); margin-left:clamp(18px,4vw,52px); }
+  .tagline { max-width:370px; color:#aabdc9; font-size:12px; line-height:2; margin:0 0 32px 5px; }
+  .moon-wrap { position:absolute; width:270px; height:270px; right:3%; top:4%; opacity:.92; }
+  .moon {
+    position:absolute; width:170px; height:170px; top:35px; left:55px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#f8f2d9 0%,#c8d8ce 34%,#799aa0 68%,#344f62 100%);
+    box-shadow:0 0 35px rgba(162,223,225,.22),0 0 100px rgba(111,193,207,.12);
+    overflow:hidden;
+  }
+  .moon:before,.moon:after { content:"";position:absolute;border-radius:50%;background:rgba(55,86,100,.16); }
+  .moon:before { width:52px;height:35px;left:28px;top:42px;box-shadow:72px 42px 0 -8px rgba(55,86,100,.16),22px 100px 0 -12px rgba(55,86,100,.18); }
+  .moon:after { width:25px;height:25px;right:27px;top:23px;box-shadow:-72px 76px 0 5px rgba(55,86,100,.12); }
+  .orbit { position:absolute; inset:0; border:1px solid rgba(153,218,224,.15); border-radius:50%; transform:rotate(-24deg) scaleY(.38); }
+  .orbit:after { content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:var(--gold);top:17px;left:37px;box-shadow:0 0 12px var(--gold); }
+  .menu {
+    background:var(--panel); border:1px solid var(--line); padding:28px 25px 23px;
+    box-shadow:0 18px 70px rgba(0,0,0,.34), inset 0 0 30px rgba(112,194,209,.025);
+    backdrop-filter:blur(10px); position:relative;
+  }
+  .menu:before,.menu:after { content:"";position:absolute;width:13px;height:13px;border-color:var(--cyan);opacity:.7; }
+  .menu:before { top:-1px;left:-1px;border-top:1px solid;border-left:1px solid; }
+  .menu:after { bottom:-1px;right:-1px;border-bottom:1px solid;border-right:1px solid; }
+  .menu-label { font-size:10px; color:#7795a8; letter-spacing:.25em; margin:0 0 19px 5px; }
+  .menu button {
+    width:100%; display:flex; align-items:center; gap:13px; padding:13px 10px;
+    color:#c5d5df; background:transparent; border:0; border-top:1px solid rgba(148,190,204,.10);
+    font:inherit; font-size:12px; letter-spacing:.08em; text-align:left; cursor:pointer;
+    transition:background .18s,color .18s,padding .18s;
+  }
+  .menu button:last-of-type { border-bottom:1px solid rgba(148,190,204,.10); }
+  .menu button .arrow { color:#648596; font-size:15px; width:13px; transition:transform .18s,color .18s; }
+  .menu button:hover,.menu button:focus-visible { color:#fff; background:rgba(111,206,218,.09); padding-left:16px; outline:none; }
+  .menu button:hover .arrow,.menu button:focus-visible .arrow { color:var(--cyan); transform:translateX(3px); }
+  .menu button.primary { color:var(--cyan); }
+  .menu-foot { display:flex;justify-content:space-between; margin:21px 4px 0; color:#627c8e; font-size:9px; letter-spacing:.12em; }
+  .version { position:fixed;left:22px;bottom:18px;color:#60798b;font-size:9px;letter-spacing:.15em; }
+  .hint { position:fixed;right:22px;bottom:18px;color:#60798b;font-size:9px;letter-spacing:.12em; }
+  .dialog-backdrop {
+    position:fixed;inset:0;background:rgba(2,7,14,.72);display:none;place-items:center;z-index:5;padding:20px;
+  }
+  .dialog-backdrop.open { display:grid; }
+  .dialog { width:min(440px,100%);padding:28px;background:#0c1827;border:1px solid rgba(140,232,237,.38);box-shadow:0 20px 90px #000; }
+  .dialog h2 { font:32px "VT323",monospace;color:var(--cyan);margin:0 0 12px;letter-spacing:.04em; }
+  .dialog p { font-size:11px;line-height:1.9;color:#b4c5cf; }
+  .dialog .actions { display:flex;justify-content:flex-end;gap:10px;margin-top:24px; }
+  .dialog button { border:1px solid var(--line);background:transparent;color:var(--ink);padding:9px 16px;font:inherit;font-size:10px;cursor:pointer; }
+  .dialog button:hover { border-color:var(--cyan);color:var(--cyan); }
+  .dialog button.confirm { background:rgba(140,232,237,.12);border-color:rgba(140,232,237,.5); }
+  .volume-row { display:flex;align-items:center;gap:12px;font-size:10px;color:#a9c0ca; }
+  input[type=range] { accent-color:var(--cyan);width:140px; }
+  @media(max-width:760px) {
+    .screen { grid-template-columns:1fr;gap:20px;padding:28px 20px;min-height:100vh;align-content:center; }
+    .scene { min-height:unset;padding:25px 4px 8px; }
+    .moon-wrap { width:160px;height:160px;right:0;top:-8px;transform:scale(.65);transform-origin:top right; }
+    h1 { font-size:clamp(65px,15vw,90px);margin:18px 0 14px; }
+    .tagline { max-width:280px;margin-bottom:8px;font-size:10px; }
+    .menu { max-width:420px;width:100%;justify-self:center;padding:19px 20px; }
+    .menu-label { margin-bottom:10px; }
+    .menu button { padding:10px; }
+    .menu-foot { margin-top:13px; }
+    .version,.hint { font-size:8px;bottom:9px; }
+    .version { left:10px; }.hint { right:10px; }
+  }
+  @media(max-height:650px) and (min-width:761px) {
+    .screen { min-height:100vh;padding:24px;gap:2rem; }
+    .scene { min-height:400px; }
+    .moon-wrap { transform:scale(.78);transform-origin:top right; }
+    h1 { font-size:82px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+<div class="horizon" aria-hidden="true"></div>
+
+<main class="screen">
+  <section class="scene" aria-label="Game title">
+    <div class="moon-wrap" aria-hidden="true"><div class="orbit"></div><div class="moon"></div></div>
+    <div class="eyebrow">A small light in a wide world</div>
+    <h1>Somewhere,<span>Elsewhere</span></h1>
+    <p class="tagline">The world is quiet. The stars are listening.<br>And somewhere, a story is waiting to begin.</p>
+  </section>
+
+  <nav class="menu" aria-label="Main menu">
+    <p class="menu-label">— MAIN MENU —</p>
+    <button class="primary" data-dialog="new"><span class="arrow">›</span> NEW GAME</button>
+    <button data-dialog="continue"><span class="arrow">›</span> CONTINUE</button>
+    <button data-dialog="settings"><span class="arrow">›</span> SETTINGS</button>
+    <button data-dialog="about"><span class="arrow">›</span> ABOUT</button>
+    <div class="menu-foot"><span>NO SIGNAL REQUIRED</span><span>✦</span></div>
+  </nav>
+</main>
+
+<div class="version">SOMEWHERE, ELSEWHERE&nbsp; · &nbsp;PRE-ALPHA</div>
+<div class="hint">↑ ↓ TO SELECT &nbsp;·&nbsp; ENTER TO OPEN</div>
+
+<div class="dialog-backdrop" id="dialogBackdrop" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+  <div class="dialog">
+    <h2 id="dialogTitle">A quiet moment</h2>
+    <div id="dialogBody"></div>
+    <div class="actions"><button id="closeDialog">BACK</button><button class="confirm" id="dialogConfirm" hidden>OK</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let stars = [], width = 0, height = 0, frame = 0;
+  function resize() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    width = innerWidth; height = innerHeight;
+    canvas.width = width * dpr; canvas.height = height * dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    stars = Array.from({length: Math.floor(width * height / 4200)}, () => ({
+      x:Math.random()*width, y:Math.random()*height, r:Math.random()*1.25+.25,
+      phase:Math.random()*Math.PI*2, speed:Math.random()*.018+.004
+    }));
+  }
+  function draw() {
+    ctx.clearRect(0,0,width,height);
+    for (const s of stars) {
+      const a = .22 + (Math.sin(frame*s.speed+s.phase)+1)*.24;
+      ctx.fillStyle = `rgba(194,229,237,${a})`;
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+    }
+    frame++;requestAnimationFrame(draw);
+  }
+  addEventListener('resize',resize);resize();draw();
+
+  const backdrop = document.getElementById('dialogBackdrop');
+  const title = document.getElementById('dialogTitle');
+  const body = document.getElementById('dialogBody');
+  const confirm = document.getElementById('dialogConfirm');
+  const close = () => { backdrop.classList.remove('open'); };
+  document.getElementById('closeDialog').addEventListener('click',close);
+  backdrop.addEventListener('click',e => { if(e.target === backdrop) close(); });
+  const messages = {
+    new: ['Not just yet', '<p>This is only the main-menu preview. Your journey through Somewhere, Elsewhere will begin in a future update.</p>'],
+    continue: ['No save found', '<p>There is no saved journey to continue. Start a new game when the full experience is ready.</p>'],
+    about: ['Somewhere, Elsewhere', '<p>An atmospheric, story-driven adventure about unlikely connections, distant places, and the little things that make a world feel alive.</p><p>Made with care. Inspired by the feeling of discovering a strange, quiet world.</p>']
+  };
+  function openDialog(kind) {
+    confirm.hidden = true;
+    if (kind === 'settings') {
+      title.textContent = 'Settings';
+      body.innerHTML = '<div class="volume-row"><label for="volume">MASTER VOLUME</label><input id="volume" type="range" min="0" max="100" value="70"><span id="volumeValue">70%</span></div><p>Settings are a preview for now. Audio will be added later.</p>';
+      const slider = document.getElementById('volume');
+      slider.addEventListener('input',() => document.getElementById('volumeValue').textContent = slider.value+'%');
+    } else {
+      title.textContent = messages[kind][0];
+      body.innerHTML = messages[kind][1];
+    }
+    backdrop.classList.add('open');
+    document.getElementById('closeDialog').focus();
+  }
+  const buttons = [...document.querySelectorAll('.menu button')];
+  buttons.forEach(b => b.addEventListener('click',() => openDialog(b.dataset.dialog)));
+  let selected = 0;
+  function select(index) {
+    selected = (index + buttons.length) % buttons.length;
+    buttons[selected].focus();
+  }
+  document.addEventListener('keydown',e => {
+    if(backdrop.classList.contains('open')) {
+      if(e.key === 'Escape') close();
+      return;
+    }
+    if(e.key === 'ArrowDown') { e.preventDefault();select(selected+1); }
+    if(e.key === 'ArrowUp') { e.preventDefault();select(selected-1); }
+    if(e.key === 'Enter' && document.activeElement === document.body) { select(selected);buttons[selected].click(); }
+  });
+})();
+</script>
+</body>
+</html>
