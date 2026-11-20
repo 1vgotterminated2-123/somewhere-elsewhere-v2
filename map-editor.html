@@ -1,144 +1,156 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Somewhere, Elsewhere — Map Editor</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Somewhere, Elsewhere — World Builder</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen:wght@400;700&display=swap');
-:root{--bg:#101820;--panel:#172328;--panel2:#202f34;--line:#53676b;--text:#e8e8df;--muted:#91a0a0;--gold:#f5d77b}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:'VT323',monospace;min-height:100vh}
-header{height:64px;border-bottom:1px solid #33454a;display:flex;align-items:center;justify-content:space-between;padding:0 22px;background:#0c1319}
-h1{font:17px 'Silkscreen',monospace;letter-spacing:-.04em;margin:0;color:#dce4df}
-h1 span{color:#a9c9c8}
-.header-actions{display:flex;gap:10px}
-button,.file-label{font:20px 'VT323',monospace;color:var(--text);background:#26383d;border:1px solid #617579;padding:7px 13px;cursor:pointer}
-button:hover,.file-label:hover{border-color:var(--gold);color:var(--gold)}
-button.primary{color:var(--gold);border-color:#a08b54}
-main{display:grid;grid-template-columns:220px minmax(0,1fr) 245px;gap:14px;padding:14px;max-width:1600px;margin:auto}
-.panel{background:var(--panel);border:1px solid #3c5054;padding:13px;min-width:0}
-.panel h2{font:17px 'Silkscreen',monospace;color:#b6d1d2;margin:0 0 12px}
-.palette{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.tile-choice{min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px;background:#1d2a2f;border:1px solid #3e5358;color:#d9e0d9;font-size:17px}
-.tile-choice.active{outline:2px solid var(--gold);border-color:var(--gold);color:var(--gold)}
-.swatch{width:27px;height:19px;border:1px solid rgba(255,255,255,.28);display:grid;place-items:center;font-size:14px;color:white}
-.tools{display:grid;gap:7px;margin-top:14px}
-.tools button{width:100%;text-align:left}
-.center{display:flex;flex-direction:column;gap:12px;min-width:0}
-.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;background:var(--panel);border:1px solid #3c5054;padding:10px}
-.toolbar label{font-size:18px;color:var(--muted)}
-.toolbar input[type=number]{width:60px;background:#0c1419;color:white;border:1px solid #52666b;padding:6px;font:18px 'VT323'}
-.toolbar .spacer{flex:1}
-.canvas-shell{flex:1;min-height:440px;display:grid;place-items:center;background:#0b1217;border:1px solid #34484d;padding:16px;overflow:auto}
-#map{display:grid;grid-template-columns:repeat(15,34px);grid-template-rows:repeat(10,34px);gap:1px;background:#0a1115;border:5px solid #35494d;box-shadow:0 8px 30px #0008;touch-action:none}
-.cell{width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(0,0,0,.13);font-size:20px;line-height:1;cursor:crosshair;user-select:none}
-.cell.spawn{outline:2px dashed var(--gold);outline-offset:-4px}
-.help{color:var(--muted);font-size:18px;line-height:1.3;margin:0}
-.status{min-height:25px;color:var(--gold);font-size:18px}
-.inspector{display:grid;gap:10px}
-.inspector label{display:grid;gap:4px;color:var(--muted);font-size:18px}
-.inspector input,.inspector textarea,.inspector select{width:100%;background:#0b1419;color:var(--text);border:1px solid #52666b;padding:7px;font:18px 'VT323'}
-.inspector textarea{min-height:105px;resize:vertical}
-.full{width:100%}
-.file-label{display:block;text-align:center}
-@media(max-width:1050px){main{grid-template-columns:190px minmax(0,1fr)}.right-panel{grid-column:1/-1}.inspector{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:680px){header{height:auto;padding:12px;align-items:flex-start;gap:10px;flex-direction:column}.header-actions{flex-wrap:wrap}main{grid-template-columns:1fr;padding:8px}.palette{grid-template-columns:repeat(4,1fr)}.tile-choice{min-height:50px;font-size:15px}.canvas-shell{min-height:300px;justify-content:start}#map{transform-origin:top left}.inspector{grid-template-columns:1fr}}
+:root{--bg:#101820;--panel:#17252b;--panel2:#20343a;--line:#496168;--text:#e8e8df;--muted:#9aabaa;--gold:#f5d77b;--cyan:#a9d0cf}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:19px 'VT323',monospace}button,input,select,textarea{font:inherit}button,.btn{background:#263b41;color:var(--text);border:1px solid #61777b;padding:8px 13px;cursor:pointer}button:hover,.btn:hover{border-color:var(--gold);color:var(--gold)}button.primary{color:var(--gold);border-color:#a18e59}input,select,textarea{background:#0c151a;color:var(--text);border:1px solid #50676c;padding:7px;width:100%;min-width:0}textarea{resize:vertical;min-height:90px}label{display:grid;gap:4px;color:var(--muted)}
+header{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:#0b1318;border-bottom:1px solid #354a50}h1{font:15px 'Silkscreen',monospace;margin:0}h1 span{color:var(--cyan)}.head-actions{display:flex;gap:8px;align-items:center}
+#projectHome{max-width:1000px;margin:7vh auto;padding:24px}.hero{margin-bottom:30px}.hero h2{font:clamp(23px,4vw,38px) 'Silkscreen',monospace;margin:0 0 12px}.hero p{color:var(--muted);font-size:22px}.home-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.home-card{background:var(--panel);border:1px solid var(--line);padding:22px;display:grid;gap:12px}.home-card h3{font:16px 'Silkscreen',monospace;color:var(--cyan);margin:0}.home-card p{color:var(--muted);margin:0}.recent-list{display:grid;gap:7px}.recent-item{display:flex;justify-content:space-between;align-items:center;padding:10px;background:#203137;border:1px solid #40575c}.recent-item button{margin-left:10px}
+#workspace{display:none;height:calc(100vh - 58px);grid-template-columns:205px minmax(0,1fr) 280px;gap:10px;padding:10px;max-width:1800px;margin:auto}
+.panel{background:var(--panel);border:1px solid var(--line);padding:11px;min-width:0;overflow:auto}.panel h2{font:13px 'Silkscreen',monospace;color:var(--cyan);margin:0 0 11px}.map-list{display:grid;gap:6px}.map-row{display:flex;gap:5px}.map-row button{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.map-row button.active{border-color:var(--gold);color:var(--gold)}.map-row .mini{flex:0 0 auto}
+.palette{display:grid;grid-template-columns:1fr 1fr;gap:6px}.tile-choice{min-height:50px;display:flex;align-items:center;gap:7px;text-align:left;padding:5px;font-size:17px}.tile-choice.active{outline:2px solid var(--gold);color:var(--gold)}.swatch{width:24px;height:24px;flex:none;display:grid;place-items:center;border:1px solid #ffffff55;color:white}
+.left-tools{display:grid;gap:6px;margin-top:12px}.left-tools button{text-align:left}
+.center{display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0}.toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);padding:8px}.toolbar label{display:flex;align-items:center;gap:6px}.toolbar input[type=number]{width:82px}.toolbar .spacer{flex:1}.tabs{display:flex;gap:5px;overflow-x:auto}.tab{white-space:nowrap}.tab.active{border-color:var(--gold);color:var(--gold)}
+.canvas-shell{flex:1;min-height:220px;overflow:auto;background:#0a1217;border:1px solid #344b50;padding:18px;display:block}#map{display:grid;gap:1px;background:#071014;border:4px solid #34494d;width:max-content;min-width:100%;touch-action:pan-x pan-y}.cell{width:30px;height:30px;display:grid;place-items:center;border:1px solid #0002;font-size:18px;line-height:1;user-select:none;cursor:crosshair}.cell.spawn{outline:2px dashed var(--gold);outline-offset:-4px}.cell.selected{box-shadow:inset 0 0 0 2px #fff}
+.status{color:var(--gold);min-height:20px}.right-section{display:grid;gap:9px;margin-bottom:18px}.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.muted{color:var(--muted);font-size:17px;line-height:1.25}.divider{height:1px;background:#3b5055;margin:12px 0}.hidden{display:none!important}
+#dialogueLines{display:grid;gap:7px}.line-row{display:grid;grid-template-columns:1fr 32px;gap:5px}.line-row button{padding:3px}.small{font-size:16px;padding:5px 8px}
+@media(max-width:1050px){#workspace{grid-template-columns:175px minmax(0,1fr);height:auto;min-height:calc(100vh - 58px)}.right-panel{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:15px}.canvas-shell{min-height:420px}}
+@media(max-width:680px){header{height:auto;min-height:58px;align-items:flex-start;gap:10px;flex-direction:column;padding:10px}.head-actions{flex-wrap:wrap}#workspace{display:none;grid-template-columns:1fr;height:auto;padding:7px}.home-grid{grid-template-columns:1fr}.right-panel{display:block}.canvas-shell{min-height:360px}.palette{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
-<header>
-  <h1>SOMEWHERE, <span>ELSEWHERE</span> / MAP EDITOR</h1>
-  <div class="header-actions">
-    <button id="newMap">NEW MAP</button><button id="undo">UNDO</button><button id="redo">REDO</button>
-    <button class="primary" id="export">EXPORT MAP</button>
-    <label class="file-label" for="importFile">IMPORT MAP</label><input id="importFile" type="file" accept=".json,application/json" hidden>
-    <a href="index.html" style="text-decoration:none"><button>BACK TO GAME</button></a>
+<header><h1>SOMEWHERE, <span>ELSEWHERE</span> / WORLD BUILDER</h1><div class="head-actions"><button id="saveProject">SAVE</button><button class="primary" id="exportProject">EXPORT PROJECT</button><a href="index.html" style="text-decoration:none"><button>BACK TO GAME</button></a></div></header>
+
+<section id="projectHome">
+ <div class="hero"><h2>What are we making today?</h2><p>Create a project to hold your world. Each project can contain many maps connected by doors, with their own names, layouts, characters, and dialogue.</p></div>
+ <div class="home-grid">
+  <div class="home-card"><h3>CREATE A PROJECT</h3><p>Start a new world from scratch.</p><label>Project name<input id="newProjectName" placeholder="My Adventure"></label><button class="primary" id="createProject">CREATE PROJECT →</button></div>
+  <div class="home-card"><h3>OPEN A PROJECT</h3><p>Continue working on a project file.</p><label class="btn" style="display:block;text-align:center;cursor:pointer">CHOOSE PROJECT FILE<input id="openProjectFile" type="file" accept=".json,application/json" hidden></label><p class="muted">You can also reopen projects saved in this browser below.</p></div>
+ </div>
+ <div style="margin-top:25px"><h3 style="font:14px 'Silkscreen';color:var(--cyan)">RECENT PROJECTS</h3><div id="recentProjects" class="recent-list"><p class="muted">No projects yet. Create one or open a project file.</p></div></div>
+</section>
+
+<section id="workspace">
+ <aside class="panel">
+  <h2>PROJECT MAPS</h2><div id="projectNameLabel" class="muted"></div><div class="divider"></div>
+  <div id="mapList" class="map-list"></div>
+  <button id="addMap" class="primary" style="width:100%;margin-top:9px">+ NEW MAP</button>
+  <div class="divider"></div><h2>TILE PALETTE</h2><div id="palette" class="palette"></div>
+  <div class="left-tools"><button id="setSpawn">⌖ Set player start</button><button id="fill">▧ Fill with selected</button><button id="clear">□ Clear to floor</button><button id="undo">↶ Undo</button><button id="redo">↷ Redo</button></div>
+ </aside>
+ <section class="center">
+  <div class="toolbar">
+   <label>Map name <input id="mapName" style="width:145px"></label>
+   <label>Width <input id="mapWidth" type="number" min="1"></label><label>Height <input id="mapHeight" type="number" min="1"></label><button id="resizeMap">Resize</button>
+   <span class="spacer"></span><label><input id="gridToggle" type="checkbox" checked style="width:auto"> Grid</label>
   </div>
-</header>
-<main>
-  <aside class="panel">
-    <h2>TILE PALETTE</h2>
-    <div class="palette" id="palette"></div>
-    <div class="tools">
-      <button id="fill">FILL MAP</button>
-      <button id="setSpawn">SET PLAYER START</button>
-      <button id="clear">CLEAR TO FLOOR</button>
-    </div>
-  </aside>
-  <section class="center">
-    <div class="toolbar">
-      <label>WIDTH <input id="width" type="number" min="5" max="40" value="15"></label>
-      <label>HEIGHT <input id="height" type="number" min="5" max="30" value="10"></label>
-      <button id="resize">RESIZE</button>
-      <span class="spacer"></span><label><input id="gridToggle" type="checkbox" checked> Grid</label>
-    </div>
-    <div class="canvas-shell"><div id="map" aria-label="Map canvas"></div></div>
-    <div class="status" id="status">Selected: Floor. Click or drag on the map to paint.</div>
-    <p class="help">Left-click / drag to paint. Right-click to erase to Floor. Choose Player Start, then click a tile to set the spawn position. Export creates a JSON map that can be imported from the game's main menu.</p>
+  <div class="tabs" id="mapTabs"></div>
+  <div class="canvas-shell"><div id="map"></div></div>
+  <div class="status" id="status">Choose a tile, then click or drag across the map to paint.</div>
+ </section>
+ <aside class="panel right-panel">
+  <section class="right-section"><h2>PROJECT SETTINGS</h2><label>Project name<input id="projectName"></label><p class="muted">Project name and map names are included when you export the whole project.</p></section>
+  <div class="divider"></div>
+  <section class="right-section"><h2>SELECTED TILE</h2><div id="tileDetails" class="muted">Select a tile in the map to edit it.</div>
+   <label>Tile type<select id="tileType"></select></label>
+   <div id="doorSettings" class="hidden">
+    <label>Connects to map<select id="doorTarget"></select></label>
+    <div class="field-grid"><label>Arrival X<input id="doorX" type="number" value="2"></label><label>Arrival Y<input id="doorY" type="number" value="2"></label></div>
+    <p class="muted">When the player interacts with this door, they travel to the selected map at the arrival coordinates.</p>
+   </div>
+   <div id="eventSettings" class="hidden">
+    <label>Speaker name<input id="eventSpeaker" placeholder="e.g. ???"></label>
+    <label>Dialogue lines</label><div id="dialogueLines"></div><button id="addLine" class="small">+ Add dialogue line</button>
+    <div class="divider"></div><h2>DIALOGUE CONDITION (OPTIONAL)</h2>
+    <label>Only show when variable<input id="conditionKey" placeholder="e.g. found_key"></label>
+    <label>Equals value<input id="conditionValue" placeholder="true"></label>
+    <p class="muted">Leave the condition blank to always show this dialogue. Conditions check story variables saved during play.</p>
+    <label>Set variable after interaction<input id="setFlagKey" placeholder="e.g. talked_to_guard"></label>
+    <label>Set variable value<input id="setFlagValue" placeholder="true"></label>
+   </div>
+   <button id="applyTile" class="primary">APPLY TILE CHANGES</button>
   </section>
-  <aside class="panel right-panel">
-    <h2>TILE INSPECTOR</h2>
-    <div class="inspector">
-      <label>Selected tile <input id="selectedName" readonly value="Floor"></label>
-      <label>Tile ID <input id="selectedId" readonly value="floor"></label>
-      <label>Map info <input id="mapInfo" readonly></label>
-    </div>
-    <div style="height:14px"></div>
-    <h2>HOW TO USE</h2>
-    <p class="help">Build rooms with floor, walls, water, paths, rugs, and interactive objects. Object tiles block movement and have built-in test dialogue. The Player Start marker determines where a new game begins.</p>
-    <p class="help" style="margin-top:12px">Maps use a simple JSON format. Importing a map here replaces the editor canvas; importing the exported JSON in the game makes it the active game map and stores it in that browser.</p>
-  </aside>
-</main>
+  <div class="divider"></div><section class="right-section"><h2>QUICK GUIDE</h2><p class="muted">Paint with click/drag. Right-click erases. Add maps from the left. Use the Door tile to link rooms. Select an Event tile to write dialogue and optional story-variable conditions.</p><p class="muted">There is no fixed map dimension cap in the editor. Very large maps depend on your browser and computer memory.</p></section>
+ </aside>
+</section>
 <script>
 (()=>{
 const $=id=>document.getElementById(id);
-const types=[
- ['floor','Floor','#536765',''],['wall','Wall','#293c40',''],['water','Water','#3b6680','≈'],
- ['grass','Grass','#496b4b',''],['path','Path','#88765a',''],['rug','Rug','#75634f',''],
- ['desk','Desk','#775d43','▤'],['terminal','Terminal','#31484b','▣'],['plant','Plant','#38583e','♣'],
- ['sign','Notice','#665744','N'],['npc','Test character','#596b6a','◉']
+const TYPES=[
+{id:'floor',name:'Floor',color:'#536765',glyph:''},{id:'wall',name:'Wall',color:'#293c40',glyph:'',solid:true},{id:'water',name:'Water',color:'#3b6680',glyph:'≈',solid:true},
+{id:'grass',name:'Grass',color:'#496b4b',glyph:''},{id:'path',name:'Path',color:'#88765a',glyph:''},{id:'rug',name:'Rug',color:'#75634f',glyph:''},
+{id:'desk',name:'Desk',color:'#775d43',glyph:'▤',solid:true},{id:'terminal',name:'Terminal',color:'#31484b',glyph:'▣',solid:true},
+{id:'plant',name:'Plant',color:'#38583e',glyph:'♣',solid:true},{id:'sign',name:'Notice',color:'#665744',glyph:'N',solid:true},
+{id:'npc',name:'Character',color:'#596b6a',glyph:'◉',solid:true},{id:'door',name:'Door',color:'#96764d',glyph:'▥',solid:true},{id:'event',name:'Event',color:'#775d86',glyph:'✦',solid:false}
 ];
-let width=15,height=10,cells=[],spawn={x:7,y:6},selected='floor',spawnMode=false,undoStack=[],redoStack=[],painting=false;
-const map=$('map');
-const tileMap=Object.fromEntries(types.map(t=>[t[0],t]));
-function snapshot(){return JSON.stringify({version:1,width,height,cells,spawn})}
-function remember(){undoStack.push(snapshot());if(undoStack.length>80)undoStack.shift();redoStack=[]}
-function restore(raw){const d=JSON.parse(raw);width=d.width;height=d.height;cells=d.cells.slice();spawn={...d.spawn};$('width').value=width;$('height').value=height;render()}
-function data(){return {version:1,width,height,cells,spawn:{...spawn}}}
-function valid(d){return d&&d.version===1&&Number.isInteger(d.width)&&Number.isInteger(d.height)&&d.width>=5&&d.width<=40&&d.height>=5&&d.height<=30&&Array.isArray(d.cells)&&d.cells.length===d.width*d.height&&d.cells.every(id=>id==='spawn'||tileMap[id])&&d.spawn&&Number.isInteger(d.spawn.x)&&Number.isInteger(d.spawn.y)&&d.spawn.x>=0&&d.spawn.x<d.width&&d.spawn.y>=0&&d.spawn.y<d.height}
+const TM=Object.fromEntries(TYPES.map(t=>[t.id,t]));
+let project=null,currentMapId=null,selectedType='floor',selectedIndex=null,spawnMode=false,painting=false,undo=[],redo=[];
+const mapEl=$('map');
+function uid(){return 'm_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7)}
+function makeMap(name='New Map',w=18,h=12){const cells=Array(w*h).fill('floor');for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(x===0||y===0||x===w-1||y===h-1)cells[y*w+x]='wall';return {id:uid(),name,width:w,height:h,cells,spawn:{x:Math.floor(w/2),y:Math.floor(h/2)},objects:{}}}
+function newProject(name){return {format:'somewhere-elsewhere-project',version:2,id:uid(),name:name||'Untitled Project',startMapId:null,maps:[]}}
+function activeMap(){return project.maps.find(m=>m.id===currentMapId)}
+function msg(s){$('status').textContent=s}
+function snap(){return JSON.stringify(activeMap())}
+function remember(){if(activeMap()){undo.push(snap());if(undo.length>100)undo.shift();redo=[]}}
+function restoreMap(raw){const d=JSON.parse(raw),idx=project.maps.findIndex(m=>m.id===currentMapId);project.maps[idx]=d;render()}
+function renderPalette(){ $('palette').innerHTML='';TYPES.forEach(t=>{const b=document.createElement('button');b.className='tile-choice';b.dataset.id=t.id;b.innerHTML=`<span class="swatch" style="background:${t.color}">${t.glyph}</span>${t.name}`;b.onclick=()=>{selectedType=t.id;renderPalette();msg('Selected '+t.name+'. Paint on the map to place it.')};$('palette').append(b)})}
+function renderMaps(){ $('mapList').innerHTML='';$('mapTabs').innerHTML='';project.maps.forEach(m=>{const row=document.createElement('div');row.className='map-row';const b=document.createElement('button');b.textContent=m.name;b.classList.toggle('active',m.id===currentMapId);b.onclick=()=>switchMap(m.id);const rename=document.createElement('button');rename.className='mini';rename.textContent='✎';rename.title='Rename map';rename.onclick=()=>{const n=prompt('Map name:',m.name);if(n&&n.trim()){m.name=n.trim();renderMaps();saveLocal()}};row.append(b,rename);$('mapList').append(row);const tab=document.createElement('button');tab.className='tab'+(m.id===currentMapId?' active':'');tab.textContent=m.name;tab.onclick=()=>switchMap(m.id);$('mapTabs').append(tab)});$('projectNameLabel').textContent=project.name}
+function switchMap(id){currentMapId=id;undo=[];redo=[];selectedIndex=null;render();renderMaps()}
 function render(){
- map.innerHTML='';map.style.gridTemplateColumns=`repeat(${width},34px)`;map.style.gridTemplateRows=`repeat(${height},34px)`;
- cells.forEach((id,i)=>{const t=tileMap[id]||tileMap.floor,el=document.createElement('div');el.className='cell '+id+(i===spawn.y*width+spawn.x?' spawn':'');el.style.background=t[2];el.textContent=t[3];el.title=`${t[1]} (${i%width},${Math.floor(i/width)})`;el.dataset.index=i;map.appendChild(el)});
- $('mapInfo').value=`${width} × ${height} / ${cells.length} tiles`;
- $('selectedName').value=spawnMode?'Player Start':tileMap[selected][1];$('selectedId').value=spawnMode?'spawn':selected;
+ const m=activeMap();if(!m)return;
+ $('mapName').value=m.name;$('mapWidth').value=m.width;$('mapHeight').value=m.height;$('projectName').value=project.name;
+ mapEl.innerHTML='';mapEl.style.gridTemplateColumns=`repeat(${m.width},30px)`;mapEl.style.gridTemplateRows=`repeat(${m.height},30px)`;
+ m.cells.forEach((id,i)=>{const t=TM[id]||TM.floor,c=document.createElement('div');c.className='cell'+(i===m.spawn.y*m.width+m.spawn.x?' spawn':'')+(i===selectedIndex?' selected':'');c.style.background=t.color;c.textContent=t.glyph;c.dataset.index=i;c.title=`${t.name} · ${i%m.width}, ${Math.floor(i/m.width)}`;mapEl.append(c)});
+ $('mapInfo')?.remove();renderMaps();renderInspector();
 }
-function paint(index,erase=false){
- const x=index%width,y=Math.floor(index/width);
- remember();
- if(spawnMode){spawn={x,y};spawnMode=false;setSelected(selected);render();status('Player start set at '+x+', '+y);return}
- cells[index]=erase?'floor':selected;render();
+function renderInspector(){
+ const m=activeMap(),obj=selectedIndex==null?null:m.objects?.[selectedIndex],id=selectedIndex==null?null:m.cells[selectedIndex];
+ $('tileDetails').textContent=selectedIndex==null?'Select a tile in the map to edit it.':`${TM[id]?.name||id} · X ${selectedIndex%m.width}, Y ${Math.floor(selectedIndex/m.width)}`;
+ $('tileType').value=id||selectedType;
+ $('doorSettings').classList.toggle('hidden',id!=='door');$('eventSettings').classList.toggle('hidden',id!=='event'&& !['npc','desk','terminal','plant','sign'].includes(id));
+ const target=$('doorTarget');target.innerHTML='';project.maps.filter(x=>x.id!==m.id).forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name;target.append(o)});
+ if(obj?.door){target.value=obj.door.mapId||'';$('doorX').value=obj.door.x??2;$('doorY').value=obj.door.y??2}
+ $('eventSpeaker').value=obj?.speaker||'';$('conditionKey').value=obj?.condition?.key||'';$('conditionValue').value=obj?.condition?.equals??'';
+ $('setFlagKey').value=obj?.setFlag?.key||'';$('setFlagValue').value=obj?.setFlag?.value??'true';
+ $('dialogueLines').innerHTML='';const lines=obj?.lines?.length?obj.lines:[''];lines.forEach(line=>addLineInput(line));
 }
-function status(s){$('status').textContent=s}
-function setSelected(id){selected=id;spawnMode=false;document.querySelectorAll('.tile-choice').forEach(b=>b.classList.toggle('active',b.dataset.id===id));$('selectedName').value=tileMap[id][1];$('selectedId').value=id}
-types.forEach(([id,name,color,glyph])=>{const b=document.createElement('button');b.className='tile-choice';b.dataset.id=id;b.innerHTML=`<span class="swatch" style="background:${color}">${glyph}</span><span>${name}</span>`;b.addEventListener('click',()=>setSelected(id));$('palette').appendChild(b)});
-function createMap(w,h){width=w;height=h;cells=Array(w*h).fill('floor');for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(x===0||y===0||x===w-1||y===h-1)cells[y*w+x]='wall';spawn={x:Math.floor(w/2),y:Math.floor(h/2)};cells[spawn.y*w+spawn.x]='floor';$('width').value=w;$('height').value=h;render()}
-map.addEventListener('pointerdown',e=>{const cell=e.target.closest('.cell');if(!cell)return;e.preventDefault();painting=true;paint(+cell.dataset.index,e.button===2)});
-map.addEventListener('pointerover',e=>{if(!painting||e.buttons!==1)return;const cell=e.target.closest('.cell');if(cell) {const i=+cell.dataset.index;if(!spawnMode&&cells[i]!==selected){cells[i]=selected;render()}}});
-window.addEventListener('pointerup',()=>painting=false);
-map.addEventListener('contextmenu',e=>e.preventDefault());
-$('resize').onclick=()=>{const w=Math.max(5,Math.min(40,+$('width').value||15)),h=Math.max(5,Math.min(30,+$('height').value||10));remember();const old={width,height,cells,spawn};width=w;height=h;cells=Array(w*h).fill('floor');for(let y=0;y<h;y++)for(let x=0;x<w;x++){if(x===0||y===0||x===w-1||y===h-1)cells[y*w+x]='wall';if(x<old.width&&y<old.height)cells[y*w+x]=old.cells[y*old.width+x]}spawn={x:Math.min(w-1,old.spawn.x),y:Math.min(h-1,old.spawn.y)};render();status('Resized map.')};
-$('setSpawn').onclick=()=>{spawnMode=true;status('Click a tile to place the player start marker.')};
-$('fill').onclick=()=>{remember();cells.fill(selected);render();status('Filled map with '+tileMap[selected][1]+'.')};
-$('clear').onclick=()=>{remember();cells.fill('floor');render();status('Cleared map to floor.')};
-$('newMap').onclick=()=>{if(confirm('Create a new map? Your current unsaved editor changes will be replaced.')){remember();createMap(15,10)}};
-$('undo').onclick=()=>{if(!undoStack.length)return;redoStack.push(snapshot());restore(undoStack.pop());status('Undo.')};
-$('redo').onclick=()=>{if(!redoStack.length)return;undoStack.push(snapshot());restore(redoStack.pop());status('Redo.')};
-$('gridToggle').onchange=()=>{map.style.gap=$('gridToggle').checked?'1px':'0'};
-$('export').onclick=()=>{const blob=new Blob([JSON.stringify(data(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='somewhere-elsewhere-map.json';a.click();URL.revokeObjectURL(url);status('Exported somewhere-elsewhere-map.json. Import it in the game menu to use it.')};
-$('importFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!valid(d))throw Error('invalid');remember();restore(JSON.stringify(d));setSelected('floor');status('Map imported successfully.')}catch(err){status('Import failed: invalid map JSON or unsupported version.')}e.target.value=''};
-createMap(15,10);setSelected('floor');
+function addLineInput(value=''){const row=document.createElement('div');row.className='line-row';const inp=document.createElement('input');inp.value=value;inp.placeholder='Dialogue text...';const del=document.createElement('button');del.textContent='×';del.title='Remove line';del.onclick=()=>row.remove();row.append(inp,del);$('dialogueLines').append(row)}
+function saveLocal(){try{const recent=JSON.parse(localStorage.getItem('se_projects')||'{}');recent[project.id]=project;localStorage.setItem('se_projects',JSON.stringify(recent));localStorage.setItem('se_recent',project.id)}catch(e){msg('Autosave unavailable: browser storage is full.')}}
+function openWorkspace(p){project=p;currentMapId=p.startMapId||p.maps[0]?.id;if(!p.maps.length){const m=makeMap('First Room');p.maps.push(m);currentMapId=m.id;p.startMapId=m.id}if(!p.startMapId)p.startMapId=currentMapId;$('projectHome').style.display='none';$('workspace').style.display='grid';undo=[];redo=[];renderPalette();render()}
+function saveProject(){if(!project)return;project.name=$('projectName').value.trim()||'Untitled Project';activeMap().name=$('mapName').value.trim()||'Untitled Map';saveLocal();renderMaps();msg('Project saved in this browser. Export a project file to back it up or share it.')}
+function validProject(p){return p&&p.format==='somewhere-elsewhere-project'&&p.version===2&&Array.isArray(p.maps)&&p.maps.length&&p.maps.every(m=>m.id&&m.name&&Number.isInteger(m.width)&&Number.isInteger(m.height)&&m.width>0&&m.height>0&&Array.isArray(m.cells)&&m.cells.length===m.width*m.height&&m.cells.every(t=>TM[t]))&&p.maps.every(m=>m.objects&&typeof m.objects==='object')}
+function create(){const p=newProject($('newProjectName').value.trim());const m=makeMap('First Room');p.maps.push(m);p.startMapId=m.id;openWorkspace(p);saveProject()}
+$('createProject').onclick=create;
+$('addMap').onclick=()=>{const name=prompt('Name this map:','New Room');if(name===null)return;const m=makeMap(name.trim()||'New Room');project.maps.push(m);switchMap(m.id);saveProject();msg('Created '+m.name+'. Add Door tiles to connect rooms.')};
+$('saveProject').onclick=saveProject;
+$('exportProject').onclick=()=>{if(!project)return;saveProject();const blob=new Blob([JSON.stringify(project,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(project.name||'project').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.seproject.json';a.click();URL.revokeObjectURL(url);msg('Exported complete project, including all maps, doors, and dialogue.')};
+$('openProjectFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const p=JSON.parse(await f.text());if(!validProject(p))throw Error('bad project');openWorkspace(p);saveProject()}catch(err){alert('That file is not a supported Somewhere, Elsewhere project.')};e.target.value=''};
+function renderRecent(){let list={};try{list=JSON.parse(localStorage.getItem('se_projects')||'{}')}catch(e){}const host=$('recentProjects');host.innerHTML='';Object.values(list).forEach(p=>{const row=document.createElement('div');row.className='recent-item';const span=document.createElement('span');span.textContent=p.name+' · '+p.maps.length+' map(s)';const b=document.createElement('button');b.textContent='OPEN';b.onclick=()=>openWorkspace(p);row.append(span,b);host.append(row)});if(!host.children.length)host.innerHTML='<p class="muted">No projects yet. Create one or open a project file.</p>'}
+renderRecent();
+mapEl.addEventListener('pointerdown',e=>{const c=e.target.closest('.cell');if(!c)return;painting=true;paint(+c.dataset.index,e.button===2)});
+mapEl.addEventListener('pointerover',e=>{if(!painting||!(e.buttons&1))return;const c=e.target.closest('.cell');if(c)paint(+c.dataset.index,false,true)});
+window.addEventListener('pointerup',()=>painting=false);mapEl.oncontextmenu=e=>e.preventDefault();
+function paint(i,erase=false,drag=false){const m=activeMap(),x=i%m.width,y=Math.floor(i/m.width);if(spawnMode){remember();m.spawn={x,y};spawnMode=false;selectedIndex=i;render();msg('Player start placed.');return}if(drag&&m.cells[i]===selectedType)return;if(!drag)remember();m.cells[i]=erase?'floor':selectedType;if(!m.objects)m.objects={};if(m.cells[i]!=='door'&&m.cells[i]!=='event'&&!['npc','desk','terminal','plant','sign'].includes(m.cells[i]))delete m.objects[i];selectedIndex=i;renderInspector();const c=mapEl.children[i];if(c){const t=TM[m.cells[i]];c.style.background=t.color;c.textContent=t.glyph;c.className='cell'+(i===m.spawn.y*m.width+m.spawn.x?' spawn':'')+' selected'} }
+mapEl.addEventListener('click',e=>{const c=e.target.closest('.cell');if(c&&!painting){selectedIndex=+c.dataset.index;renderInspector()}});
+$('tileType').onchange=()=>{if(selectedIndex==null)return;remember();const m=activeMap();m.cells[selectedIndex]=$('tileType').value;selectedType=m.cells[selectedIndex];render();};
+$('applyTile').onclick=()=>{const m=activeMap();if(selectedIndex==null){msg('Select a tile first.');return}const id=m.cells[selectedIndex];m.objects||={};const obj={...(m.objects[selectedIndex]||{})};
+if(id==='door'){obj.door={mapId:$('doorTarget').value,x:+$('doorX').value||0,y:+$('doorY').value||0};if(!obj.door.mapId){msg('Create another map before linking a door.');return}}
+else {obj.speaker=$('eventSpeaker').value;obj.lines=[...$('dialogueLines').querySelectorAll('input')].map(i=>i.value).filter(v=>v.length);const ck=$('conditionKey').value.trim();obj.condition=ck?{key:ck,equals:$('conditionValue').value}:null;const fk=$('setFlagKey').value.trim();obj.setFlag=fk?{key:fk,value:$('setFlagValue').value||'true'}:null}
+m.objects[selectedIndex]=obj;saveProject();msg('Tile settings saved.')}
+$('addLine').onclick=()=>addLineInput('');
+$('setSpawn').onclick=()=>{spawnMode=true;msg('Click a map tile to set the player start position.')};
+$('fill').onclick=()=>{remember();const m=activeMap();m.cells.fill(selectedType);m.objects={};render();msg('Filled map with '+TM[selectedType].name+'.')};
+$('clear').onclick=()=>{remember();const m=activeMap();m.cells.fill('floor');m.objects={};render();msg('Cleared map to floor.')};
+$('undo').onclick=()=>{if(!undo.length)return;redo.push(snap());restoreMap(undo.pop());msg('Undo.')};
+$('redo').onclick=()=>{if(!redo.length)return;undo.push(snap());restoreMap(redo.pop());msg('Redo.')};
+$('resizeMap').onclick=()=>{const m=activeMap(),w=Math.floor(+$('mapWidth').value),h=Math.floor(+$('mapHeight').value);if(!Number.isSafeInteger(w)||!Number.isSafeInteger(h)||w<1||h<1||!Number.isSafeInteger(w*h)||w*h>4294967295){msg('Enter positive dimensions. Very large maps may exceed browser memory.');return}remember();const cells=Array(w*h).fill('floor');for(let y=0;y<Math.min(h,m.height);y++)for(let x=0;x<Math.min(w,m.width);x++)cells[y*w+x]=m.cells[y*m.width+x];const oldWidth=m.width,oldObjects=m.objects||{};const remapped={};for(const [key,value] of Object.entries(oldObjects)){const oldIndex=+key,ox=oldIndex%oldWidth,oy=Math.floor(oldIndex/oldWidth);if(ox<w&&oy<h)remapped[oy*w+ox]=value}m.width=w;m.height=h;m.cells=cells;m.spawn={x:Math.min(w-1,m.spawn.x),y:Math.min(h-1,m.spawn.y)};m.objects=remapped;render();msg('Resized map. No fixed dimension cap is enforced; browser memory is the practical limit.')};
+$('mapName').onchange=()=>{activeMap().name=$('mapName').value.trim()||'Untitled Map';renderMaps();saveLocal()};
+$('projectName').onchange=()=>{project.name=$('projectName').value.trim()||'Untitled Project';$('projectNameLabel').textContent=project.name;saveLocal()};
+$('gridToggle').onchange=()=>{mapEl.style.gap=$('gridToggle').checked?'1px':'0'};
 })();
 </script>
-</body>
-</html>
+</body></html>
