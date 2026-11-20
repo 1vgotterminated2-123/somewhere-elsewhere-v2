@@ -28,6 +28,17 @@
   .menu button.selected .marker { color:var(--gold); }
   .menu-note { margin:23px 0 0 27px;color:#6f7c7d;font-size:16px;line-height:1.5; }
   .footer { position:fixed;z-index:2;left:22px;right:22px;bottom:14px;display:flex;justify-content:space-between;color:#59666a;font-size:15px;letter-spacing:.04em;pointer-events:none; }
+  .maker-shortcuts { position:fixed;z-index:4;left:22px;bottom:42px;display:flex;gap:16px;align-items:center;font:18px 'VT323',monospace; }
+  .maker-shortcuts a,.maker-shortcuts button { color:#a9c4c1;background:none;border:0;padding:4px 0;text-decoration:none;font:inherit;cursor:pointer; }
+  .maker-shortcuts a:hover,.maker-shortcuts button:hover { color:var(--gold); }
+  .map-cell { min-width:0;min-height:0;display:grid;place-items:center;position:relative;font-size:clamp(10px,1.7vw,23px);line-height:1; }
+  .map-cell.wall { box-shadow:inset 0 0 0 2px rgba(0,0,0,.22); }
+  .map-cell.water { background:repeating-linear-gradient(135deg,#345c78 0 5px,#416f8a 5px 10px)!important; }
+  .map-cell.grass { background:#496b4b!important; }
+  .map-cell.path { background:#88765a!important; }
+  .map-cell.rug { background:#75634f!important; }
+  .map-cell.desk,.map-cell.terminal,.map-cell.plant,.map-cell.sign,.map-cell.npc { font-size:clamp(13px,2vw,25px); }
+  .map-cell.spawn { outline:2px dashed #f5d77b;outline-offset:-4px; }
   .dialog-backdrop { position:fixed;inset:0;z-index:5;background:rgba(0,0,0,.72);display:none;place-items:center;padding:20px; }
   .dialog-backdrop.open { display:grid; }
   .dialog { width:min(520px,100%);padding:24px 28px;background:#11191d;border:2px solid #59696a;box-shadow:7px 7px 0 #050708; }
@@ -103,15 +114,17 @@
   </nav>
 </main>
 <div class="footer" id="footer"><span>SOMEWHERE, ELSEWHERE</span><span>v0.1.0</span></div>
+<div class="maker-shortcuts" id="makerShortcuts">
+  <a href="map-editor.html" data-allow-click>MAP EDITOR</a>
+  <button id="importMapButton" data-allow-click>IMPORT MAP</button>
+  <input id="mapFileInput" type="file" accept=".json,application/json" hidden>
+</div>
 
 <section id="gameScreen" aria-label="Testing room">
   <header class="game-top"><span>SOMEWHERE, ELSEWHERE</span><span id="playerLabel">PLAYER</span></header>
   <div class="room-wrap">
     <div class="room" id="room">
       <div class="room-grid" id="roomGrid"></div>
-      <div class="object desk" title="Desk"></div><div class="object lamp">♟</div>
-      <div class="object terminal">▣</div><div class="object plant">♣</div>
-      <div class="object sign">NOTICE</div><div class="object npc">◉</div>
       <div id="player"><div class="player-head"></div><div class="player-face"></div><div class="player-body"></div></div>
     </div>
   </div>
@@ -141,13 +154,85 @@
   let playerName='Traveler', player={x:7,y:6,face:'down'}, activeDialogue=null, dialogueIndex=0;
   const SAVE_KEY='somewhere_elsewhere_save_v1';
 
-  // Build a small fixed test room from walkable floor tiles and solid perimeter walls.
+  // Maps exported by map-editor.html use this compact JSON structure.
+  const TILE_TYPES = {
+    floor:{label:'Floor',color:'#536765',solid:false,glyph:''},
+    wall:{label:'Wall',color:'#293c40',solid:true,glyph:''},
+    water:{label:'Water',color:'#3b6680',solid:true,glyph:'≈'},
+    grass:{label:'Grass',color:'#496b4b',solid:false,glyph:''},
+    path:{label:'Path',color:'#88765a',solid:false,glyph:''},
+    rug:{label:'Rug',color:'#75634f',solid:false,glyph:''},
+    desk:{label:'Desk',color:'#775d43',solid:true,glyph:'▤',speaker:'',dialogue:['An old desk.','There is nothing on it but a thin layer of dust.']},
+    terminal:{label:'Terminal',color:'#31484b',solid:true,glyph:'▣',speaker:'TERMINAL',dialogue:['TEST TERMINAL v0.1','The screen flickers softly.','No connection. No messages. Just a blinking cursor.']},
+    plant:{label:'Plant',color:'#38583e',solid:true,glyph:'♣',speaker:'',dialogue:['A potted plant.','It looks surprisingly healthy.']},
+    sign:{label:'Notice',color:'#665744',solid:true,glyph:'NOTICE',speaker:'NOTICE',dialogue:['TEST ROOM','Arrow keys move.','Z or ENTER interacts with things in front of you.','X or ESC opens the pause menu.']},
+    npc:{label:'Test character',color:'#596b6a',solid:true,glyph:'◉',speaker:'???',dialogue:['Oh! Hello there.','I am just a test character.','I do not have much to say yet.']},
+    spawn:{label:'Player start',color:'#536765',solid:false,glyph:'',spawn:true}
+  };
+  const DEFAULT_MAP = (() => {
+    const width=15,height=10,cells=Array(width*height).fill('floor');
+    for(let y=0;y<height;y++) for(let x=0;x<width;x++) if(x===0||y===0||x===width-1||y===height-1) cells[y*width+x]='wall';
+    const put=(x,y,id)=>cells[y*width+x]=id;
+    [[6,2],[7,2],[8,2],[6,3],[7,3],[8,3]].forEach(([x,y])=>put(x,y,'desk'));
+    put(11,4,'terminal');put(3,4,'plant');put(7,7,'sign');put(3,3,'npc');put(7,6,'spawn');
+    return {version:1,width,height,cells,spawn:{x:7,y:6}};
+  })();
+  let currentMap=DEFAULT_MAP;
   const grid=$('roomGrid');
-  for(let y=0;y<10;y++) for(let x=0;x<15;x++) {
-    const tile=document.createElement('div');
-    tile.className='tile'+((x+y)%2?' alt':'')+((x===0||y===0||x===14||y===9)?' wall':'');
-    grid.appendChild(tile);
+  function validMap(data) {
+    return data && data.version===1 && Number.isInteger(data.width) && Number.isInteger(data.height) &&
+      data.width>=5 && data.width<=40 && data.height>=5 && data.height<=30 &&
+      Array.isArray(data.cells) && data.cells.length===data.width*data.height &&
+      data.cells.every(id=>Object.prototype.hasOwnProperty.call(TILE_TYPES,id));
   }
+  function renderMap(data) {
+    currentMap=data;
+    grid.innerHTML='';
+    grid.style.gridTemplateColumns=`repeat(${data.width},1fr)`;
+    grid.style.gridTemplateRows=`repeat(${data.height},1fr)`;
+    $('room').style.aspectRatio=`${data.width}/${data.height}`;
+    data.cells.forEach((id,index)=>{
+      const type=TILE_TYPES[id]||TILE_TYPES.floor,cell=document.createElement('div');
+      cell.className='map-cell '+id;
+      cell.style.background=type.color;
+      cell.textContent=type.glyph||'';
+      cell.dataset.tile=id;
+      cell.title=type.label;
+      if(id==='spawn') cell.classList.add('spawn');
+      grid.appendChild(cell);
+    });
+  }
+  function applyImportedMap(data) {
+    if(!validMap(data)) { showDialog('continue'); title.textContent='Invalid map'; body.innerHTML='<p>This file is not a compatible Somewhere, Elsewhere map.</p>'; return false; }
+    const spawn=data.spawn && Number.isInteger(data.spawn.x) && Number.isInteger(data.spawn.y) ? data.spawn : {x:1,y:1};
+    currentMap=data; renderMap(data);
+    try { localStorage.setItem('somewhere_elsewhere_map_v1',JSON.stringify(data)); } catch(e) {}
+    player={x:spawn.x,y:spawn.y,face:'down'};
+    return true;
+  }
+  function loadStoredMap() {
+    try {
+      const stored=JSON.parse(localStorage.getItem('somewhere_elsewhere_map_v1')||'null');
+      if(validMap(stored)) { currentMap=stored; renderMap(stored); return; }
+    } catch(e) {}
+    renderMap(DEFAULT_MAP);
+  }
+  loadStoredMap();
+  $('importMapButton').addEventListener('click',()=> $('mapFileInput').click());
+  $('mapFileInput').addEventListener('change',async e=>{
+    const file=e.target.files?.[0]; if(!file) return;
+    try {
+      const data=JSON.parse(await file.text());
+      if(applyImportedMap(data)) {
+        title.textContent='Map imported'; body.innerHTML='<p>Your map is now the active game map. Start a new game or continue to explore it.</p>';
+        returnTo='menu';mode='dialog';dialogOpen=true;backdrop.classList.add('open');selectDialog(1);
+      }
+    } catch(err) {
+      title.textContent='Could not import map';body.innerHTML='<p>The selected file could not be read as map JSON.</p>';
+      returnTo='menu';mode='dialog';dialogOpen=true;backdrop.classList.add('open');selectDialog(1);
+    }
+    e.target.value='';
+  });
   function selectMenu(index) {
     selected=(index+buttons.length)%buttons.length;
     buttons.forEach((b,i)=>b.classList.toggle('selected',i===selected));
@@ -186,10 +271,13 @@
   }
   function startGame(name, isNew=true) {
     playerName=name || 'Traveler';
-    if(isNew) player={x:7,y:6,face:'down'};
+    if(isNew) {
+      const spawn=currentMap.spawn||{x:7,y:6};
+      player={x:spawn.x,y:spawn.y,face:'down'};
+    }
     saveGame();
     $('playerLabel').textContent=playerName.toUpperCase();
-    titleScreen.style.display='none'; footer.style.display='none';
+    titleScreen.style.display='none'; footer.style.display='none'; $('makerShortcuts').style.display='none';
     backdrop.classList.remove('open'); dialogOpen=false; mode='game';
     gameScreen.classList.add('active'); updatePlayer();
     if(isNew) startDialogue('','A small room. A quiet beginning.','The air feels still here.','There must be something to look at.');
@@ -223,15 +311,16 @@
   }
   function updatePlayer() {
     const el=$('player');
-    el.style.left=(player.x/15*100+2)+'%';
-    el.style.top=(player.y/10*100+1)+'%';
+    el.style.left=(player.x/currentMap.width*100)+'%';
+    el.style.top=(player.y/currentMap.height*100)+'%';
+    el.style.width=(100/currentMap.width)+'%';
+    el.style.height=(100/currentMap.height)+'%';
     el.style.transform=player.face==='left'?'scaleX(-1)':player.face==='right'?'scaleX(1)':'';
   }
   function blocked(x,y) {
-    if(x<1||x>13||y<1||y>8) return true;
-    // Furniture and fixtures occupy solid tiles.
-    const solids=[[6,2],[7,2],[8,2],[6,3],[7,3],[8,3],[11,4],[11,5],[3,4],[3,5]];
-    return solids.some(([sx,sy])=>sx===x&&sy===y);
+    if(x<0||x>=currentMap.width||y<0||y>=currentMap.height) return true;
+    const id=currentMap.cells[y*currentMap.width+x];
+    return !!(TILE_TYPES[id]||TILE_TYPES.floor).solid;
   }
   function move(dx,dy) {
     player.face=dx<0?'left':dx>0?'right':dy<0?'up':'down';
@@ -253,23 +342,20 @@
     dialogueText.textContent=activeDialogue.lines[dialogueIndex];
   }
   function interact() {
-    // Check the tile immediately in front of the player.
     const dx=player.face==='left'?-1:player.face==='right'?1:0;
     const dy=player.face==='up'?-1:player.face==='down'?1:0;
-    const tx=player.x+dx, ty=player.y+dy;
-    if((tx>=5&&tx<=9&&ty>=1&&ty<=3) || (player.x>=5&&player.x<=9&&player.y===4)) {
-      startDialogue('','An old desk.','There is nothing on it but a thin layer of dust.');
-    } else if(tx===11&&(ty===4||ty===5) || (player.x===11&&player.y===6)) {
-      startDialogue('TERMINAL','TEST TERMINAL v0.1','The screen flickers softly.','No connection. No messages. Just a blinking cursor.');
-    } else if(tx===3&&(ty===4||ty===5) || (player.x===3&&player.y===6)) {
-      startDialogue('','A potted plant.','It looks surprisingly healthy.');
-    } else if(tx>=6&&tx<=8&&ty===7 || (player.x>=6&&player.x<=8&&player.y===6)) {
-      startDialogue('NOTICE','TEST ROOM','Arrow keys move.','Z or ENTER interacts with things in front of you.','X or ESC opens the pause menu.');
-    } else if(tx>=3&&tx<=4&&ty>=3&&ty<=5 || (player.x>=3&&player.x<=4&&player.y===6)) {
-      startDialogue('???','Oh! Hello there.','I am just a test character.','I do not have much to say yet.','But it is nice to meet you, '+playerName+'.');
-    } else {
-      startDialogue('','Nothing interesting here.');
+    const candidates=[[player.x+dx,player.y+dy],[player.x,player.y]];
+    for(const [tx,ty] of candidates) {
+      if(tx<0||ty<0||tx>=currentMap.width||ty>=currentMap.height) continue;
+      const id=currentMap.cells[ty*currentMap.width+tx],type=TILE_TYPES[id];
+      if(type && type.dialogue) {
+        const lines=type.dialogue.slice();
+        if(id==='npc') lines.push('It is nice to meet you, '+playerName+'.');
+        startDialogue(type.speaker||'',...lines);
+        return;
+      }
     }
+    startDialogue('','Nothing interesting here.');
   }
   function pauseGame() {
     returnTo='game'; mode='dialog'; dialogOpen=true;
@@ -284,13 +370,13 @@
     if(dialogSelected===0) { backButton.innerHTML='<span class="marker">▶</span>BACK'; okButton.innerHTML='<span class="marker">▶</span>OK'; closeDialog(); }
     else {
       saveGame(); backdrop.classList.remove('open'); dialogOpen=false; gameScreen.classList.remove('active');
-      titleScreen.style.display='grid'; footer.style.display='flex'; mode='menu';
+      titleScreen.style.display='grid'; footer.style.display='flex'; $('makerShortcuts').style.display='flex'; mode='menu';
       backButton.innerHTML='<span class="marker">▶</span>BACK'; okButton.innerHTML='<span class="marker">▶</span>OK';
       selectMenu(0);
     }
   }
-  document.addEventListener('mousedown',e=>{ if(!e.target.matches('input')) e.preventDefault(); });
-  document.addEventListener('click',e=>{ if(!e.target.matches('input')) e.preventDefault(); });
+  document.addEventListener('mousedown',e=>{ if(!e.target.matches('input') && !e.target.closest('[data-allow-click]')) e.preventDefault(); });
+  document.addEventListener('click',e=>{ if(!e.target.matches('input') && !e.target.closest('[data-allow-click]')) e.preventDefault(); });
   document.addEventListener('keydown',e=>{
     const key=e.key, inputActive=document.activeElement?.id==='playerNameInput';
     if(inputActive) {
